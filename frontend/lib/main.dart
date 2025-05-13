@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'onboarding_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -108,6 +109,16 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+                );
+              },
+              child: const Text('Show Onboarding'),
             ),
           ],
         ),
