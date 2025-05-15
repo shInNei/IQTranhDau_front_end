@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'layout.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -40,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
     } else {
       // Go to home or main screen
-      Navigator.pop(context); // returns to previous screen (home)
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainPageLayout()),);
     }
   }
 
@@ -100,7 +101,7 @@ class OnboardingPage extends StatelessWidget {
                   SizedBox(height: 16),
                   Text(title,
                       style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                   SizedBox(height: 12),
                   Text(
                     description,
