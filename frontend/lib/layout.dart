@@ -17,10 +17,17 @@ class MainPageLayout extends StatefulWidget {
 class _MainPageLayoutState extends State<MainPageLayout> {
   int _currentIndex = 0;
   bool _resetHome = false;
+  bool _resetProfile = false;
 
-  void _onResetComplete() {
+  void _onResetHomeComplete() {
     setState(() {
       _resetHome = false; // reset the flag after handled
+    });
+  }
+
+  void _onResetProfileComplete() {
+    setState(() {
+      _resetProfile = false; // reset the flag after handled
     });
   }
 
@@ -29,15 +36,19 @@ class _MainPageLayoutState extends State<MainPageLayout> {
       if(index == 0 && _currentIndex == 0) {
         _resetHome = true;
       }
+      if(index == 3 && _currentIndex == 3) {
+        _resetProfile = true;
+      }
+
       _currentIndex = index;
     });
   }
 
 List<Widget> get screens => [
-  HomeScreen(resetToMain: _resetHome, onResetComplete: _onResetComplete),
+  HomeScreen(resetToMain: _resetHome, onResetComplete: _onResetHomeComplete),
   const NotificationScreen(),
   const GiftScreen(),
-  const ProfileScreen(),
+  ProfileScreen(resetToMain: _resetProfile, onResetComplete: _onResetProfileComplete),
 ];
 
 
