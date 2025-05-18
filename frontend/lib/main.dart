@@ -3,7 +3,6 @@
 // import 'home.dart';
 // import 'navbar.dart';
 
-
 // void main() {
 //   runApp(const MyApp());
 // }
@@ -136,7 +135,7 @@
 //           ],
 //         ),
 //       ),
-  
+
 //       floatingActionButton: FloatingActionButton(
 //         onPressed: _incrementCounter,
 //         tooltip: 'Increment',
@@ -150,6 +149,7 @@ import 'package:flutter/material.dart';
 import 'onboarding_screen.dart';
 import 'login/login.dart';
 import 'login/register.dart';
+import 'home.dart';
 
 void main() {
   runApp(const MyApp());

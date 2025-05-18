@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'profile_edit.dart';
 
-
 class ProfileScreen extends StatefulWidget {
   final bool resetToMain;
   final VoidCallback? onResetComplete;
 
-    const ProfileScreen({
-      super.key,
-      this.resetToMain = false,
-      this.onResetComplete,
+  const ProfileScreen({
+    super.key,
+    this.resetToMain = false,
+    this.onResetComplete,
   });
 
   @override
@@ -69,51 +68,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final data = profileData!;
 
     return Scaffold(
       backgroundColor: Colors.white,
-appBar: AppBar(
-  automaticallyImplyLeading: false,
-  leading: _currentSubscreen != 'main'
-      ? IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            _showSubscreen('main');
-          },
-        )
-      : null,
-  title: const Text(''),
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  actions: [
-    TextButton(
-      onPressed: () {
-        // Logout logic
-      },
-      style: TextButton.styleFrom(
-        backgroundColor: Colors.teal.withAlpha((0.7 * 255).toInt()),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading:
+            _currentSubscreen != 'main'
+                ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    _showSubscreen('main');
+                  },
+                )
+                : null,
+        title: const Text(''),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Logout logic
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.teal.withAlpha((0.7 * 255).toInt()),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Đăng Xuất',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.teal, Colors.green],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
-      child: const Text('Đăng Xuất', style: TextStyle(color: Colors.white)),
-    ),
-    const SizedBox(width: 16),
-  ],
-  flexibleSpace: Container(
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        colors: [Colors.teal, Colors.green],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-  ),
-),
 
       body: _buildSubscreen(data),
     );
@@ -137,7 +140,7 @@ appBar: AppBar(
             ElevatedButton(
               onPressed: () => _showSubscreen('main'),
               child: const Text("Quay lại"),
-            )
+            ),
           ],
         ),
       );
@@ -170,8 +173,14 @@ appBar: AppBar(
           ],
         ),
         const SizedBox(height: 60),
-        Text(data['username'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        Text('Level ${data['level']}', style: const TextStyle(fontSize: 18, color: Colors.orange)),
+        Text(
+          data['username'],
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          'Level ${data['level']}',
+          style: const TextStyle(fontSize: 18, color: Colors.orange),
+        ),
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -187,7 +196,9 @@ appBar: AppBar(
               onPressed: null,
               icon: const Icon(Icons.lock),
               label: const Text("Thành tích"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade400),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade400,
+              ),
             ),
           ],
         ),
@@ -195,9 +206,22 @@ appBar: AppBar(
         Column(
           children: [
             const Icon(Icons.school, size: 80, color: Colors.teal),
-            Text(data['rank'], style: const TextStyle(fontSize: 16, color: Colors.purple)),
-            Text("${data['points']} điểm / ${data['maxPoints']}", style: const TextStyle(fontSize: 14)),
-            Text("Elo ${data['elo'].toStringAsFixed(2)}%", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue)),
+            Text(
+              data['rank'],
+              style: const TextStyle(fontSize: 16, color: Colors.purple),
+            ),
+            Text(
+              "${data['points']} điểm / ${data['maxPoints']}",
+              style: const TextStyle(fontSize: 14),
+            ),
+            Text(
+              "Elo ${data['elo'].toStringAsFixed(2)}%",
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 30),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './login/login.dart';
 import 'layout.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -14,21 +15,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> onboardingData = [
     {
-      'image': 'assets/images/welcome.png', 
+      'image': 'assets/images/welcome.png',
       'title': 'Chào Mừng Người Chơi',
-      'description': 'Rèn luyện trí não, thử thách bạn bè và chinh phục mọi câu đố.',
+      'description':
+          'Rèn luyện trí não, thử thách bạn bè và chinh phục mọi câu đố.',
       'buttonText': 'Tiếp Theo',
     },
     {
       'image': 'assets/images/howto.png', // Replace with your image path
       'title': 'Cách Chơi',
-      'description': 'Đấu trí mọi lúc, mọi nơi. Trả lời nhanh các câu đố IQ, tích điểm và leo lên bảng xếp hạng.',
+      'description':
+          'Đấu trí mọi lúc, mọi nơi. Trả lời nhanh các câu đố IQ, tích điểm và leo lên bảng xếp hạng.',
       'buttonText': 'Tiếp Theo',
     },
     {
-      'image': 'assets/images/connect.png', 
+      'image': 'assets/images/connect.png',
       'title': 'Kết Nối Bạn Bè',
-      'description': 'Mời bạn bè tham gia, so tài trí tuệ và xem ai là người giỏi nhất!',
+      'description':
+          'Mời bạn bè tham gia, so tài trí tuệ và xem ai là người giỏi nhất!',
       'buttonText': 'Bắt Đầu',
     },
   ];
@@ -41,10 +45,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
     } else {
       // Go to home or main screen
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainPageLayout()),);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -53,16 +59,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         controller: _pageController,
         onPageChanged: (index) => setState(() => _currentPage = index),
         itemCount: onboardingData.length,
-        itemBuilder: (context, index) => OnboardingPage(
-          image: onboardingData[index]['image']!,
-          title: onboardingData[index]['title']!,
-          description: onboardingData[index]['description']!,
-          buttonText: onboardingData[index]['buttonText']!,
-          onPressed: _nextPage,
-          isLast: index == onboardingData.length - 1,
-          currentPage: _currentPage,
-          totalPages: onboardingData.length,
-        ),
+        itemBuilder:
+            (context, index) => OnboardingPage(
+              image: onboardingData[index]['image']!,
+              title: onboardingData[index]['title']!,
+              description: onboardingData[index]['description']!,
+              buttonText: onboardingData[index]['buttonText']!,
+              onPressed: _nextPage,
+              isLast: index == onboardingData.length - 1,
+              currentPage: _currentPage,
+              totalPages: onboardingData.length,
+            ),
       ),
     );
   }
@@ -99,9 +106,10 @@ class OnboardingPage extends StatelessWidget {
                 children: [
                   Image.asset(image, height: 220),
                   SizedBox(height: 16),
-                  Text(title,
-                      style:
-                          TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(height: 12),
                   Text(
                     description,
@@ -118,9 +126,10 @@ class OnboardingPage extends StatelessWidget {
                         width: currentPage == index ? 12 : 8,
                         height: currentPage == index ? 12 : 8,
                         decoration: BoxDecoration(
-                          color: currentPage == index
-                              ? Color(0xFF87B8B5)
-                              : Color(0xFFADD2CF),
+                          color:
+                              currentPage == index
+                                  ? Color(0xFF87B8B5)
+                                  : Color(0xFFADD2CF),
                           shape: BoxShape.circle,
                         ),
                       );
@@ -153,8 +162,10 @@ class OnboardingPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                 ),
-                child: Text(buttonText,
-                    style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: Text(
+                  buttonText,
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             ),
           ),

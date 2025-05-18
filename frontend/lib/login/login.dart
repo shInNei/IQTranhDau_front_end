@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register.dart';
-import '../main.dart';
+import '../layout.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -35,14 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
           // Thực hiện điều hướng đến trang chính hoặc trang khác
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const MyHomePage(title: 'Trang chính'),
-            ),
+            MaterialPageRoute(builder: (context) => const MainPageLayout()),
           );
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đăng nhập thành công (giả lập)')),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text('Đăng nhập thành công (giả lập)')),
+        // );
       }
     });
   }
