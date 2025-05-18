@@ -8,7 +8,7 @@ class HomeScreen extends StatefulWidget {
   final bool resetToMain;
   final VoidCallback? onResetComplete;
 
-  const HomeScreen({super.key, this.resetToMain = false, this.onResetComplete,});
+  const HomeScreen({super.key, this.resetToMain = false, this.onResetComplete});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -16,7 +16,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _currentSubscreen = 'main'; // can be 'main', 'rank', or 'practice'
-
 
   @override
   void didUpdateWidget(covariant HomeScreen oldWidget) {
@@ -48,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (_currentSubscreen == 'ranked') {
       content = RankedScreen(onBack: () => _showSubscreen('rank'));
     } else if (_currentSubscreen == 'practice') {
-      content = const PracticeScreen();
+      content = PracticeScreen();
     } else {
       content = Column(
         mainAxisSize: MainAxisSize.min,
@@ -62,10 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Image.asset(
-            'assets/images/logo.png',
-            height: 250,
-          ),
+          Image.asset('assets/images/logo.png', height: 250),
           const SizedBox(height: 16),
           const Text(
             'Thay vì hỏi\nsao không thử tìm đáp án?',
@@ -81,29 +77,53 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 240,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 60,
+                  vertical: 16,
+                ),
                 backgroundColor: const Color(0xFF1C1C3A),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               onPressed: () => _showSubscreen('rank'),
-              child: const Text('Đấu hạng', style: TextStyle(color: Colors.white),),
+              child: const Text(
+                'Đấu hạng',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           const SizedBox(height: 16),
           SizedBox(
             width: 240,
             child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 16),
-              backgroundColor: const Color(0xFF1C1C3A),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 60,
+                  vertical: 16,
+                ),
+                backgroundColor: const Color(0xFF1C1C3A),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              onPressed: () => _showSubscreen('practice'),
+              child: const Text(
+                'Luyện tập',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-            onPressed: () => _showSubscreen('practice'),
-            child: const Text('Luyện tập', style: TextStyle(color: Colors.white),),
           ),
-        ),
         ],
       );
     }
