@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'layout.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -21,11 +23,11 @@ class CustomButton extends StatelessWidget {
   }
 }
 
-class CustomBottomNavBar extends StatelessWidget {
+class ConvexNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CustomBottomNavBar({
+  const ConvexNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
@@ -33,18 +35,37 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
+    return ConvexAppBar(
+      style: TabStyle.reactCircle,
+      backgroundColor: const Color(0xFFE3F2FD), // Light blue background
+      color: const Color(0xFFB0BEC5), // Light blue-gray for inactive icons
+      activeColor: const Color(0xFF42A5F5), // Softer blue for active tab/icon
+      height: 50,
+      curveSize: 60,
+      top: -15,
+      initialActiveIndex: currentIndex,
       onTap: onTap,
-      selectedItemColor: Colors.deepPurple,
-      unselectedItemColor: Colors.grey,
-      type: BottomNavigationBarType.fixed,
-      iconSize: 30,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.card_giftcard), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        TabItem(
+          icon: Icon(Icons.home, size: 24),
+          activeIcon: Icon(Icons.home, size: 24),
+          title: '',
+        ),
+        TabItem(
+          icon: Icon(Icons.notifications, size: 24),
+          activeIcon: Icon(Icons.notifications, size: 24),
+          title: '',
+        ),
+        TabItem(
+          icon: Icon(Icons.card_giftcard, size: 24),
+          activeIcon: Icon(Icons.card_giftcard, size: 24),
+          title: '',
+        ),
+        TabItem(
+          icon: Icon(Icons.person, size: 24),
+          activeIcon: Icon(Icons.person, size: 24),
+          title: '',
+        ),
       ],
     );
   }
