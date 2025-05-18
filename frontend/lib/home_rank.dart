@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'ranked.dart';
 
 class HomeRankScreen extends StatelessWidget {
-  const HomeRankScreen({super.key});
+  final VoidCallback onShowRanked;
+
+  const HomeRankScreen({super.key, required this.onShowRanked});
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +91,7 @@ class HomeRankScreen extends StatelessWidget {
           top: 80, // lowered from 40
           right: 16,
           child: GestureDetector(
-            onTap: () {
-              print('Rank clicked');
-            },
+            onTap: onShowRanked,
             child: Row(
               children: [
                 const Icon(Icons.emoji_events, color: Colors.orange),

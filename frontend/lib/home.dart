@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'home_rank.dart'; // this is just a widget, not a scaffold
 import 'practice_screen.dart'; // this too
+import 'ranked.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool resetToMain;
@@ -43,7 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
     Widget content;
 
     if (_currentSubscreen == 'rank') {
-      content = const HomeRankScreen();
+      content = HomeRankScreen(onShowRanked: () => _showSubscreen("ranked"));
+    } else if (_currentSubscreen == 'ranked') {
+      content = RankedScreen(onBack: () => _showSubscreen('rank'));
     } else if (_currentSubscreen == 'practice') {
       content = const PracticeScreen();
     } else {

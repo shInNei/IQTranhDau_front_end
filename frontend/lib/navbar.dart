@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'home.dart';
-import 'notification.dart';
-import 'gift.dart';
-import 'profile.dart';
-
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
