@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'practice_match_screen.dart';
 
 class PracticeScreen extends StatelessWidget {
   // List of topics with their names and icons
@@ -31,8 +32,12 @@ class PracticeScreen extends StatelessWidget {
                 color: Colors.blue,
               ),
               onTap: () {
-                // Handle topic selection (e.g., navigate to quiz screen)
-                print("Selected topic: ${topics[index]["name"]}");
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuizScreen(topicID: 0, playerIDs: ["0", "1", "2"]),
+                    ),
+                  );
               },
             ),
           );

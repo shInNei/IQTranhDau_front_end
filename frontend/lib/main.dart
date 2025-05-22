@@ -149,7 +149,7 @@ import 'package:flutter/material.dart';
 import 'onboarding_screen.dart';
 import 'login/login.dart';
 import 'login/register.dart';
-import 'home.dart';
+import 'practice_match_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -298,6 +298,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('Register'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const QuizScreen(topicID: 0, playerIDs: ["0", "1", "2"]),
+                  ),
+                );
+              },
+              child: const Text('Practice Match'),
             ),
           ],
         ),
