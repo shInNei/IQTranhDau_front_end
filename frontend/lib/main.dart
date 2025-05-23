@@ -146,10 +146,14 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:frontend/data/data.dart';
+import 'package:frontend/home.dart';
+import 'package:frontend/home_rank.dart';
 import 'onboarding_screen.dart';
 import 'login/login.dart';
 import 'login/register.dart';
 import 'practice_match_screen.dart';
+import 'pvp_match.dart';
 
 void main() {
   runApp(const MyApp());
@@ -305,11 +309,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const QuizScreen(topicID: 0, playerIDs: ["0", "1", "2"]),
+                    builder:
+                        (context) => const QuizScreen(
+                          topicID: 0,
+                          playerIDs: ["0", "1", "2"],
+                        ),
                   ),
                 );
               },
               child: const Text('Practice Match'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => PvPMatchScreen(
+                          player1: currentUser,
+                          player2: players[1],
+                        ),
+                  ),
+                );
+              },
+              child: const Text('PvP Match'),
             ),
           ],
         ),

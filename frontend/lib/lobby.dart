@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import './data/data.dart';
 import './models/room.dart';
 import 'room.dart';
+import 'home_rank.dart';
 
 class LobbyScreen extends StatefulWidget {
   final bool autoCreate;
@@ -11,6 +12,14 @@ class LobbyScreen extends StatefulWidget {
 }
 
 class _LobbyScreenState extends State<LobbyScreen> {
+  String _currentSubscreen = 'lobby';
+
+  void _showSubscreen(String screen) {
+    setState(() {
+      _currentSubscreen = screen;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -122,7 +131,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     IconButton(
                       icon: const Icon(Icons.close, size: 32),
                       tooltip: 'Đóng sảnh chờ',
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => _showSubscreen('ranked'),
                     ),
                   ],
                 ),

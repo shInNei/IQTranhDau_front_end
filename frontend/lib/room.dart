@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'data/data.dart';
 import './models/player.dart';
 import './models/room.dart';
+import 'pvp_match.dart';
 
 class RoomScreen extends StatelessWidget {
   final Room room;
@@ -123,7 +124,20 @@ class RoomScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (isHost) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => PvPMatchScreen(
+                                  player1: room.host,
+                                  player2: room.opponent!,
+                                ),
+                          ),
+                        );
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           hasOpponent

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/data/data.dart';
 import 'register.dart';
 import '../layout.dart';
 
@@ -23,24 +24,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() {
     setState(() {
-      // Ví dụ kiểm tra đơn giản: email và mật khẩu không rỗng
+      // Check if fields are empty
       if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-        _errorText =
-            'Tên Đăng Nhập hoặc Mật Khẩu có sai sót. Vui lòng nhập lại';
-      } else {
-        _errorText = null;
-        // TODO: Thực hiện logic đăng nhập
-        {
-          // Giả lập đăng nhập thành công
-          // Thực hiện điều hướng đến trang chính hoặc trang khác
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MainPageLayout()),
-          );
+        _errorText = 'Tên Đăng Nhập hoặc Mật Khẩu không được để trống';
+        return;
+      }
+
+      // Check credentials against fake user data
+      bool isAuthenticated = false;
+      int? playerIndex;
+      for (var user in userData) {
+        if (user["username"] == _emailController.text &&
+            user["password"] == _passwordController.text) {
+          isAuthenticated = true;
+          playerIndex = user["playerIndex"];
+          break;
         }
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(content: Text('Đăng nhập thành công (giả lập)')),
-        // );
+      }
+
+      if (isAuthenticated && playerIndex != null) {
+        _errorText = null;
+        // Set the currentUser to the corresponding Player
+        currentUser = players[playerIndex];
+        // Navigate to the main page on successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainPageLayout()),
+        );
+      } else {
+        _errorText = 'Tên Đăng Nhập hoặc Mật Khẩu không đúng. Vui lòng thử lại';
       }
     });
   }
@@ -67,8 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
               TextField(
                 controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
+                keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
+                  hintText: '012345678',
                   labelText: 'Tên đăng nhập/ Số điện thoại',
                   border: OutlineInputBorder(),
                 ),
@@ -83,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
                     ),
                     onPressed: _toggleVisibility,
                   ),
@@ -99,7 +113,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     // TODO: Điều hướng đến trang "Quên mật khẩu"
                   },
-                  child: const Text('Quên mật khẩu?'),
+                  child: const Text(
+                    'Quên mật khẩu?',
+                    style: TextStyle(color: Colors.blue),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -110,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  backgroundColor: const Color.fromARGB(192, 19, 41, 88),
+                  backgroundColor: const Color(0xFF132958),
                 ),
                 child: const Text(
                   'Đăng nhập',
@@ -151,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   // TODO: Đăng nhập với Facebook
                 },
-                icon: const Icon(Icons.facebook),
+                icon: const Icon(Icons.facebook, color: Colors.blue),
                 label: const Text('Tiếp tục với tài khoản Facebook'),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -170,18 +187,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(fontSize: 16),
                     ),
                     TextButton(
-                      onPressed:
-                          () => {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const RegisterScreen(),
-                              ),
-                            ),
-                          },
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
+                      },
                       child: const Text(
                         'Đăng ký',
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16, color: Colors.blue),
                       ),
                     ),
                   ],

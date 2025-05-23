@@ -6,6 +6,7 @@ final players = <Player>[
     name: 'Sun',
     level: 30,
     rank: 'Tập sự',
+    rankPoint: 100,
     elo: 76.87,
     avatarPath: 'assets/images/sun.jpg',
   ),
@@ -13,6 +14,7 @@ final players = <Player>[
     name: 'Top1',
     level: 90,
     rank: 'Master',
+    rankPoint: 1000,
     elo: 100.0,
     avatarPath: 'assets/images/avatar.jpg',
   ),
@@ -20,6 +22,7 @@ final players = <Player>[
     name: 'Mèo Lười',
     level: 45,
     rank: 'Thách đấu',
+    rankPoint: 2000,
     elo: 92.3,
     avatarPath: 'assets/images/meo_luoi.jpg',
   ),
@@ -27,13 +30,30 @@ final players = <Player>[
     name: 'Bạch Hổ',
     level: 60,
     rank: 'Cao thủ',
+    rankPoint: 1500,
     elo: 85.5,
     avatarPath: 'assets/images/bach_ho.jpg',
   ),
 ];
 
 /// Giả định user đang đăng nhập
-final currentUser = players[0];
+Player currentUser = players[0];
+
+//User password
+final List<Map<String, dynamic>> userData = [
+  {"username": "abc", "password": "123", "playerIndex": 0}, // Maps to Sun
+  {"username": "a", "password": "a", "playerIndex": 1}, // Maps to Top1
+  {
+    "username": "meoluoi123",
+    "password": "meo789",
+    "playerIndex": 2,
+  }, // Maps to Mèo Lười
+  {
+    "username": "bachho456",
+    "password": "ho101",
+    "playerIndex": 3,
+  }, // Maps to Bạch Hổ
+];
 
 /// Danh sách phòng sẵn có
 final rooms = <Room>[
@@ -48,7 +68,14 @@ final rooms = <Room>[
 ];
 
 // generalKnowledgeQuestions, physicsQuestions, mathQuestions, computerScienceQuestions, animalQuestions, plantQuestions
-
+List<List<Map<String, dynamic>>> allTopics = [
+  generalKnowledgeQuestions,
+  physicsQuestions,
+  mathQuestions,
+  computerScienceQuestions,
+  animalQuestions,
+  plantQuestions,
+];
 // General Knowledge (Học tập)
 List<Map<String, dynamic>> generalKnowledgeQuestions = [
   {
