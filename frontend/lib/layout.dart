@@ -43,7 +43,7 @@ class _MainPageLayoutState extends State<MainPageLayout> {
       if (index == 0 && _currentIndex == 0) {
         _resetHome = true;
       }
-      if (index == 3 && _currentIndex == 3) {
+      if (index == 2 && _currentIndex == 2) {
         _resetProfile = true;
       }
       _currentIndex = index;
@@ -53,7 +53,6 @@ class _MainPageLayoutState extends State<MainPageLayout> {
   List<Widget> get screens => [
     HomeScreen(resetToMain: _resetHome, onResetComplete: _onResetHomeComplete),
     const NotificationScreen(),
-    const GiftScreen(),
     ProfileScreen(
       resetToMain: _resetProfile,
       onResetComplete: _onResetProfileComplete,

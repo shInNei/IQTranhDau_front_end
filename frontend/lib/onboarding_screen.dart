@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import './login/login.dart';
 import 'layout.dart';
 
@@ -37,7 +38,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < onboardingData.length - 1) {
       _pageController.nextPage(
         duration: Duration(milliseconds: 300),
@@ -45,6 +46,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
     } else {
       // Go to home or main screen
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('seenOnboarding', true);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),

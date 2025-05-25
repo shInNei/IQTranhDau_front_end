@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_edit.dart';
+import 'changepass.dart';
+import 'ranked.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool resetToMain;
@@ -66,61 +68,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+@override
+Widget build(BuildContext context) {
+  if (isLoading) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
 
-    final data = profileData!;
+  final data = profileData!;
 
+  // If subscreen is 'rank', return Scaffold without AppBar
+  if (_currentSubscreen == 'rank') {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading:
-            _currentSubscreen != 'main'
-                ? IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    _showSubscreen('main');
-                  },
-                )
-                : null,
-        title: const Text(''),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Logout logic
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.teal.withAlpha((0.7 * 255).toInt()),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'Đăng Xuất',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          const SizedBox(width: 16),
-        ],
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.teal, Colors.green],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-      ),
-
       body: _buildSubscreen(data),
     );
   }
+
+  // Otherwise, return Scaffold with AppBar
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      leading: _currentSubscreen != 'main'
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                _showSubscreen('main');
+              },
+            )
+          : null,
+      title: const Text(''),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      actions: [
+        TextButton(
+          onPressed: () {
+            // Logout logic
+          },
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.teal.withAlpha((0.7 * 255).toInt()),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: const Text(
+            'Đăng Xuất',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        const SizedBox(width: 16),
+      ],
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.teal, Colors.green],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+    ),
+    body: _buildSubscreen(data),
+  );
+}
+
 
   Widget _buildSubscreen(Map<String, dynamic> data) {
     if (_currentSubscreen == 'update') {
@@ -131,18 +142,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         imagePath: data['avatar'],
       );
     } else if (_currentSubscreen == 'password') {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Đổi mật khẩu", style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _showSubscreen('main'),
-              child: const Text("Quay lại"),
-            ),
-          ],
-        ),
+        return EditPasswordScreen(
+        onBack: () => _showSubscreen('main'),
+        imagePath: data['avatar'],
+      );
+    } else if (_currentSubscreen == 'rank') {
+      return RankedScreen(
+        onBack: () => _showSubscreen('main'),
       );
     }
 
@@ -186,7 +192,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                _showSubscreen('rank');
+              },
               icon: const Icon(Icons.leaderboard),
               label: const Text("Xếp hạng"),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),

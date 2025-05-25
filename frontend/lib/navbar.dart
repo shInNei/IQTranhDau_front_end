@@ -56,11 +56,11 @@ class ConvexNavBar extends StatelessWidget {
           activeIcon: Icon(Icons.notifications, size: 24),
           title: '',
         ),
-        TabItem(
-          icon: Icon(Icons.card_giftcard, size: 24),
-          activeIcon: Icon(Icons.card_giftcard, size: 24),
-          title: '',
-        ),
+        // TabItem(
+        //   icon: Icon(Icons.card_giftcard, size: 24),
+        //   activeIcon: Icon(Icons.card_giftcard, size: 24),
+        //   title: '',
+        // ),
         TabItem(
           icon: Icon(Icons.person, size: 24),
           activeIcon: Icon(Icons.person, size: 24),

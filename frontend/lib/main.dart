@@ -149,18 +149,27 @@ import 'package:flutter/material.dart';
 import 'package:frontend/data/data.dart';
 import 'package:frontend/home.dart';
 import 'package:frontend/home_rank.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_screen.dart';
 import 'login/login.dart';
 import 'login/register.dart';
 import 'practice_match_screen.dart';
 import 'pvp_match.dart';
+import 'offline_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  // Use share preferences to check if onboarding has been seen
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool? seenOnboarding = prefs.getBool('seenOnboarding');
+
+  runApp(MyApp(seenOnboarding: seenOnboarding ?? false));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool seenOnboarding;
+
+  const MyApp({super.key, required this.seenOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -185,11 +194,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      initialRoute: '/',
+      initialRoute: seenOnboarding ? '/' : '/onboarding',
       routes: {
         '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
       },
     );
   }
@@ -334,6 +344,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
               child: const Text('PvP Match'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => OfflineScreen(),
+                  ),
+                );
+              },
+              child: const Text('Offline_Screen'),
             ),
           ],
         ),
