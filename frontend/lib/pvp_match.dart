@@ -7,6 +7,7 @@ import 'data/data.dart';
 import 'lobby.dart';
 import 'models/player.dart';
 import 'home.dart';
+import 'layout.dart';
 
 class PvPMatchScreen extends StatefulWidget {
   final Player player1;
@@ -94,7 +95,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
 
     if (currentQuestion >= totalQuestions) {
       timer?.cancel();
-      showDialog(context: context, builder: (context) => rewardPopup(context));
+      showDialog(context: context, barrierDismissible: false, builder: (context) => rewardPopup(context));
     } else {
       startTimer();
     }
@@ -241,7 +242,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder:
-                                  (context) => HomeScreen(resetToMain: true),
+                                  (context) => MainPageLayout()
                             ),
                             (Route<dynamic> route) => false,
                           );
@@ -269,18 +270,22 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder:
-                                  (context) => HomeScreen(
-                                    resetToMain: false,
-                                    onResetComplete: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => LobbyScreen(),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                  (context) => MainPageLayout()
                             ),
                             (Route<dynamic> route) => false,
+                          );
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => HomeScreen(
+                                resetToMain: false,
+                              ),
+                            ),
+                          );
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => LobbyScreen(autoCreate: true,
+                            ),
+                            )
                           );
                         },
                         child: Container(

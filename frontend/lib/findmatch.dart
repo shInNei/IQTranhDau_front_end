@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'home.dart';
 import 'data/data.dart';
+import 'layout.dart';
 
 class FindMatchScreen extends StatelessWidget {
   @override
@@ -71,9 +72,10 @@ class NoMatchPage extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => CreatingMatchPage()),
                     );
                   } else if (shouldContinue == false) {
-                    Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute(builder: (_) => HomeScreen()));
+                    Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainPageLayout()),
+        );
                   }
                 },
                 style: ElevatedButton.styleFrom(

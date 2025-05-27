@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'profile_edit.dart';
 import 'changepass.dart';
 import 'ranked.dart';
+import 'login/login.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool resetToMain;
@@ -104,6 +105,11 @@ Widget build(BuildContext context) {
         TextButton(
           onPressed: () {
             // Logout logic
+            print("User logged out");
+            Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
           },
           style: TextButton.styleFrom(
             backgroundColor: Colors.teal.withAlpha((0.7 * 255).toInt()),

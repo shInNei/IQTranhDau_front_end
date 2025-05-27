@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'practice_match_screen.dart';
 
 class PracticeScreen extends StatelessWidget {
-  // List of topics with their names and icons
+  final VoidCallback? onBack;
+
+  PracticeScreen({this.onBack});
+
   final List<Map<String, dynamic>> topics = [
     {"name": "Học tập", "icon": Icons.school},
     {"name": "Vật lý", "icon": Icons.science},
@@ -15,7 +18,14 @@ class PracticeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Các bộ câu hỏi'), centerTitle: true),
+      appBar: AppBar(
+        title: Text('Các bộ câu hỏi'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: onBack, // use the callback to notify HomeScreen
+        ),
+      ),
       body: ListView.builder(
         itemCount: topics.length,
         itemBuilder: (context, index) {
@@ -33,11 +43,14 @@ class PracticeScreen extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QuizScreen(topicID: 0, playerIDs: ["0", "1", "2"]),
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizScreen(
+                      topicID: index,
+                      playerIDs: ["0", "1", "2"],
                     ),
-                  );
+                  ),
+                );
               },
             ),
           );

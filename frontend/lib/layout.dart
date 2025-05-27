@@ -59,14 +59,26 @@ class _MainPageLayoutState extends State<MainPageLayout> {
     ),
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: screens[_currentIndex],
-      bottomNavigationBar: ConvexNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabChanged,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+      child: KeyedSubtree( // Helps differentiate widgets
+        key: ValueKey<int>(_currentIndex),
+        child: screens[_currentIndex],
       ),
-    );
-  }
+    ),
+    bottomNavigationBar: ConvexNavBar(
+      currentIndex: _currentIndex,
+      onTap: _onTabChanged,
+    ),
+  );
+}
 }

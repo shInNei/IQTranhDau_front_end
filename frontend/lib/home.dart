@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (_currentSubscreen == 'ranked') {
       content = RankedScreen(onBack: () => _showSubscreen('rank'));
     } else if (_currentSubscreen == 'practice') {
-      content = PracticeScreen();
+      content = PracticeScreen(onBack: () => _showSubscreen('main'));
     } else {
       content = Column(
         mainAxisSize: MainAxisSize.min,

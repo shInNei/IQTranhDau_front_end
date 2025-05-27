@@ -28,7 +28,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   bool usedFiftyFifty = false;
   bool usedChangeQuestion = false;
   List<int> shownAnswers = [0, 1, 2, 3]; // For 50:50 logic
-  int maxQuestions = 15;
+  int maxQuestions = 2;
   int questionID = 0;
 
   List<Player>? roomPlayers;
@@ -621,6 +621,7 @@ Stack(
           score += 10;
                         showDialog(
                           context: context,
+                          barrierDismissible: false,
                           builder: (context) => rewardPopup(context),
                         );
         }
