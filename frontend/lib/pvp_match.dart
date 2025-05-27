@@ -283,7 +283,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                           );
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => LobbyScreen(autoCreate: true,
+                              builder: (context) => LobbyScreen(autoCreate: false,
                             ),
                             )
                           );
