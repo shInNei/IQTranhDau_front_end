@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/data/data.dart';
 import 'package:frontend/home.dart';
 import 'package:frontend/home_rank.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'onboarding_screen.dart';
@@ -10,27 +11,58 @@ import 'login/register.dart';
 import 'practice_match_screen.dart';
 import 'pvp_match.dart';
 import 'offline_screen.dart';
+import 'socket_service.dart'; // 🔁 import đúng file bạn dùng
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
-  // Use share preferences to check if onboarding has been seen
   WidgetsFlutterBinding.ensureInitialized();
+  final loggedIn = await AuthService.isLoggedIn();
+  await Firebase.initializeApp();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool? seenOnboarding = prefs.getBool('seenOnboarding');
 
   await SentryFlutter.init(
-    (options) {
-      options.dsn = 'https://ebe3dc58468e76c523b6379749bd95a6@o4509393287905280.ingest.us.sentry.io/4509393318510592';
-      options.sendDefaultPii = true;
-    },
-    appRunner: () => runApp(SentryWidget(child: MyApp(seenOnboarding: seenOnboarding ?? false))),
-  );
-
+  (options) {
+    options.dsn = 'https://ebe3dc58468e76c523b6379749bd95a6@o4509393287905280.ingest.us.sentry.io/4509393318510592';
+    options.sendDefaultPii = true;
+  },
+  appRunner: () => runApp(
+    SentryWidget(
+      child: MultiProvider(
+        providers: [
+          Provider<SocketRomService>(
+            create: (_) => SocketRomService(),
+            dispose: (_, service) => service.dispose(),
+          ),
+        ],
+        child: MyApp(
+          seenOnboarding: seenOnboarding ?? false,
+          loggedIn: loggedIn ?? false,
+        ),
+      ),
+    ),
+  ),
+);
+// runApp(
+//     MultiProvider(
+//       providers: [
+//         Provider<SocketRomService>(
+//           create: (_) => SocketRomService(),
+//           dispose: (_, service) => service.dispose(),
+//         ),
+//       ],
+//       child: MyApp(seenOnboarding: seenOnboarding ?? false, loggedIn: loggedIn ?? false),
+//     ),
+//   );
+// }
 }
 
 class MyApp extends StatelessWidget {
   final bool seenOnboarding;
-
-  const MyApp({super.key, required this.seenOnboarding});
+  final bool loggedIn;
+  const MyApp({super.key, required this.seenOnboarding, required this.loggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +87,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      initialRoute: seenOnboarding ? '/' : '/onboarding',
+      initialRoute: seenOnboarding == true ? '/' : ( loggedIn == false ? '/login' : '/onboarding'),
       routes: {
         '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
         '/login': (context) => const LoginScreen(),
@@ -182,9 +214,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialPageRoute(
                     builder:
                         (context) => const QuizScreen(
-                          topicID: 0,
-                          playerIDs: ["0", "1", "2"],
-                        ),
+                      topicID: 0,
+                      playerIDs: ["0", "1", "2"],
+                    ),
                   ),
                 );
               },
@@ -198,9 +230,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialPageRoute(
                     builder:
                         (context) => PvPMatchScreen(
-                          player1: currentUser,
-                          player2: players[1],
-                        ),
+                      player1: currentUser,
+                      player2: players[1],
+                    ),
                   ),
                 );
               },

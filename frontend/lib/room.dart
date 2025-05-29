@@ -1,159 +1,212 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/auth_service.dart';
+import 'package:provider/provider.dart';
 import 'data/data.dart';
 import './models/player.dart';
 import './models/room.dart';
+import 'lobby.dart';
 import 'pvp_match.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:frontend/socket_service.dart';
 
-class RoomScreen extends StatelessWidget {
+class RoomScreen extends StatefulWidget  {
   final Room room;
+
   const RoomScreen({super.key, required this.room});
 
   @override
-  Widget build(BuildContext context) {
-    final isHost = room.host.name == currentUser.name;
-    final hasOpponent = room.opponent != null;
+  State<RoomScreen> createState() => _RoomScreenState();
+}
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE3E7FF), Color(0xFFFFFFFF)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+class _RoomScreenState extends State<RoomScreen> {
+  late Room currentRoom;
+  late SocketRomService socketService;
+  int? currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUserIdAndSetup();();
+    currentRoom = widget.room;
+  }
+
+  Future<void> _loadCurrentUserIdAndSetup() async {
+    currentUserId = await AuthService.getUserId();
+    currentRoom = widget.room;
+
+    socketService.onRoomUpdateCallback = (room) {
+      if (room.id != currentRoom.id) return; // Không phải phòng mình đang ở → bỏ qua
+
+      final isStillInRoom =
+          room.host.id == currentUserId || room.opponent?.id == currentUserId;
+
+      if (!isStillInRoom) {
+        if (ModalRoute.of(context)?.isCurrent ?? false) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bạn đã bị rời khỏi phòng')),
+          );
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LobbyScreen()),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        currentRoom = room;
+      });
+    };
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    socketService = Provider.of<SocketRomService>(context, listen: false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasOpponent = currentRoom.opponent != null;
+    final isHost = currentRoom.host.id == currentUserId;
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) async {
+        if (!didPop) return;
+        final socketService = Provider.of<SocketRomService>(context, listen: false);
+        socketService.leaveRoom(currentRoom.id, currentUserId??0);
+
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE3E7FF), Color(0xFFFFFFFF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                // Header
-                Row(
-                  children: [
-                    const Text(
-                      'Phòng chờ',
-                      style: TextStyle(
-                        fontSize: 24,
+        child: SafeArea(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      const Text(
+                        'Phòng chờ',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 66, 49, 5),
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 32),
+                        onPressed: () async {
+                          final currentUserId = await AuthService.getUserId();
+                          final socketService = Provider.of<SocketRomService>(context, listen: false);
+
+                          if (currentUserId != null) {
+                            socketService.leaveRoom(currentRoom.id, currentUserId);
+                          }
+
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'ID: ${currentRoom.id}',
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 66, 49, 5),
+                        color: Colors.black,
                       ),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 32),
-                      onPressed: () {
-                        // If the user is the host, remove the room from the rooms list
-                        if (isHost) {
-                          rooms.removeWhere((r) => r.id == room.id);
-                        }
-                        // Navigate back to LobbyScreen
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'ID: ${room.id}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Host card
-                PlayerCard(player: room.host),
+                  // Host card
+                  PlayerCard(player: currentRoom.host),
 
-                const SizedBox(height: 24),
-                // Opponent or placeholder
-                if (hasOpponent)
-                  Stack(
-                    children: [
-                      PlayerCard(player: room.opponent!),
-                      if (isHost)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: GestureDetector(
-                            onTap: () {
-                              // Host removes opponent (update room in the list)
-                              final updatedRoom = Room(
-                                id: room.id,
-                                host: room.host,
-                                opponent: null, // Remove opponent
-                              );
-                              final roomIndex = rooms.indexWhere(
-                                (r) => r.id == room.id,
-                              );
-                              if (roomIndex != -1) {
-                                rooms[roomIndex] = updatedRoom;
-                              }
-                              // Navigate back and refresh the RoomScreen with updated room
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RoomScreen(room: updatedRoom),
+                  const SizedBox(height: 24),
+                  // Opponent or placeholder
+                  if (hasOpponent)
+                    Stack(
+                      children: [
+                        PlayerCard(player: currentRoom.opponent!),
+                        if (isHost)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: GestureDetector(
+                              onTap: () async {
+                                // Host removes opponent (update room in the list)
+                                final currentUserId = await AuthService.getUserId();
+                                final socketService = Provider.of<SocketRomService>(context, listen: false);
+
+                                if (currentUserId != null) {
+                                  socketService.leaveRoom(currentRoom.id, currentRoom.opponent?.id ?? 0);
+                                }
+
+                              },
+                              child: const CircleAvatar(
+                                backgroundColor: Colors.red,
+                                radius: 12,
+                                child: Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: Colors.white,
                                 ),
-                              );
-                            },
-                            child: const CircleAvatar(
-                              backgroundColor: Colors.red,
-                              radius: 12,
-                              child: Icon(
-                                Icons.close,
-                                size: 16,
-                                color: Colors.white,
                               ),
                             ),
                           ),
-                        ),
-                    ],
-                  )
-                else
-                  PlaceholderCard(),
+                      ],
+                    )
+                  else
+                    PlaceholderCard(),
 
-                const Spacer(),
+                  const Spacer(),
 
-                // Button dưới cùng
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (isHost) {
+                  // Button dưới cùng
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: (hasOpponent && isHost)
+                          ? () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (_) => PvPMatchScreen(
-                                  player1: room.host,
-                                  player2: room.opponent!,
-                                ),
+                            builder: (_) => PvPMatchScreen(
+                              player1: currentRoom.host,
+                              player2: currentRoom.opponent!,
+                            ),
                           ),
                         );
                       }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          hasOpponent
-                              ? (isHost ? Colors.black : Colors.blueGrey)
-                              : Colors.blueGrey,
-                    ),
-                    child: Text(
-                      hasOpponent
-                          ? (isHost ? '⚔️ Bắt đầu' : 'Chờ chủ phòng bắt đầu')
-                          : 'Đang chờ đối thủ...',
-                      style: const TextStyle(fontSize: 18),
+                          : null, // ❌ Vô hiệu hóa nếu không phải host hoặc chưa có đối thủ
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: hasOpponent
+                            ? (isHost ? Colors.black : Colors.blueGrey)
+                            : Colors.blueGrey,
+                      ),
+                      child: Text(
+                        hasOpponent
+                            ? (isHost ? '⚔️ Bắt đầu' : 'Chờ chủ phòng bắt đầu')
+                            : 'Đang chờ đối thủ...',
+                        style: const TextStyle(fontSize: 18),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         ),
@@ -161,6 +214,7 @@ class RoomScreen extends StatelessWidget {
     );
   }
 }
+
 
 /// Widget dùng chung để render 1 Player card
 class PlayerCard extends StatelessWidget {

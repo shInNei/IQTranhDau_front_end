@@ -3,6 +3,7 @@ import '../models/room.dart';
 
 final players = <Player>[
   Player(
+    id:1,
     name: 'Sun',
     level: 30,
     rank: 'Tập sự',
@@ -11,6 +12,7 @@ final players = <Player>[
     avatarPath: 'assets/images/sun.jpg',
   ),
   Player(
+    id:1,
     name: 'Top1',
     level: 90,
     rank: 'Master',
@@ -19,6 +21,7 @@ final players = <Player>[
     avatarPath: 'assets/images/avatar.jpg',
   ),
   Player(
+    id:1,
     name: 'Mèo Lười',
     level: 45,
     rank: 'Thách đấu',
@@ -27,6 +30,7 @@ final players = <Player>[
     avatarPath: 'assets/images/meo_luoi.jpg',
   ),
   Player(
+    id:1,
     name: 'Bạch Hổ',
     level: 60,
     rank: 'Cao thủ',

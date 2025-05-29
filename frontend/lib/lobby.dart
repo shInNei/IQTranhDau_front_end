@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend/models/player.dart';
+import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/socket_service.dart';
+import 'package:provider/provider.dart';
 import './data/data.dart';
 import './models/room.dart';
 import 'room.dart';
@@ -13,34 +18,82 @@ class LobbyScreen extends StatefulWidget {
 
 class _LobbyScreenState extends State<LobbyScreen> {
   String _currentSubscreen = 'lobby';
+  late SocketRomService socketService;
 
   void _showSubscreen(String screen) {
     setState(() {
       _currentSubscreen = screen;
     });
   }
+  List<Room> rooms = [];
 
   @override
   void initState() {
     super.initState();
-    if (widget.autoCreate) {
-      // chờ build xong mới push RoomScreen
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _createRoom();
+    socketService = Provider.of<SocketRomService>(context, listen: false);
+    // Gửi yêu cầu lấy danh sách phòng
+    socketService.setupListeners(onRoomCreated:onRoomCreated, onRoomUpdate: onRoomUpdate, onRoomList: onRoomList);
+  }
+  void onRoomCreated(data) {
+    Room currentRoom = Room.fromJson(data);
+    print('data: ${currentRoom.status}');
+    if (currentRoom.status == true) {
+      print('✅ Phòng ${currentRoom.host.name} đã được tạo (is ${currentRoom.status}) : ${currentRoom.id}');
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RoomScreen(room: currentRoom),
+        ),
+      ).then((_) {
+        // Reload danh sách phòng khi quay lại từ RoomScreen
+        if (mounted) socketService.getRooms(); // Reload khi quay lại
+
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tạo phòng thất bại')),
+      );
     }
   }
+  void onRoomUpdate(data)  {
+    print('onRoomUpdate');
+    final updatedRoom = data;
 
-  void _createRoom() {
-    final newRoom = Room(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      host: currentUser,
-      opponent: null,
-    );
-    rooms.insert(0, newRoom);
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => RoomScreen(room: newRoom)));
+    print('onRoomUpdate: $data');
+    setState(() {
+      final index = rooms.indexWhere((r) => r.id == updatedRoom.id);
+      if (index != -1) {
+        rooms[index] = updatedRoom;
+      }
+    });
+  }
+
+  void onRoomList(data)  {
+    print('📤 onRoomList update');
+    if (!mounted) return; // Không làm gì nếu widget đã bị dispose
+
+    setState(() {
+      rooms = List<Room>.from(data.map((r) => Room.fromJson(r)));
+    });
+  }
+  void _createRoom() async {
+    final currentUser = await AuthService.getUser();
+    final user = {
+      "id": currentUser?['id'],
+      "name": currentUser?['name'],
+      "level": currentUser?['level'],
+      "rank": currentUser?['rank'],
+      "rankPoint": currentUser?['rankPoint'],
+      "elo": currentUser?['elo'],
+      "avatarPath": currentUser?['avatarPath'],
+      "score": currentUser?['score'],
+    };
+    String id = '${currentUser?['id']}.${DateTime
+        .now()
+        .millisecondsSinceEpoch}';
+    final host = Player.fromJson(user);
+    socketService.createRoom(id, host);
   }
 
   void _enterByCode() {
@@ -144,34 +197,29 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     itemBuilder: (ctx, i) {
                       final r = rooms[i];
                       return InkWell(
-                        onTap: () {
+                        onTap: () async {
                           if (r.opponent == null) {
-                            final joined = Room(
-                              id: r.id,
-                              host: r.host,
-                              opponent: currentUser,
-                            );
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => RoomScreen(room: joined),
-                              ),
+                            final currentUser = await AuthService.getUser();
+                            final player = Player.fromJson(currentUser!);
+
+                            socketService.joinRoomAndWait(
+                              roomId: r.id,
+                              player: player,
+                              context: context,
                             );
                           } else {
                             showDialog(
                               context: context,
-                              builder:
-                                  (ctx) => AlertDialog(
-                                    title: const Text('Phòng đã đầy'),
-                                    content: const Text(
-                                      'Phòng này đã có đủ người chơi.',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx),
-                                        child: const Text('Đóng'),
-                                      ),
-                                    ],
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Phòng đã đầy'),
+                                content: const Text('Phòng này đã có đủ người chơi.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('Đóng'),
                                   ),
+                                ],
+                              ),
                             );
                           }
                         },
@@ -292,5 +340,24 @@ class _LobbyScreenState extends State<LobbyScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    socketService = Provider.of<SocketRomService>(context, listen: false);
+    if (widget.autoCreate) {
+      // chờ build xong mới push RoomScreen
+      _createRoom();
+    }
+    // ✅ Gọi lại getRooms là đủ
+    socketService.getRooms();
+  }
+
+  @override
+  void dispose() {
+    print('❌lobby  removeListeners');
+    socketService.removeListeners(); // bạn cần định nghĩa hàm này
+    super.dispose();
   }
 }
