@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/data/data.dart';
+import '../services/auth_service.dart';
 import 'register.dart';
 import '../layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../home.dart'; // 🔁 thay đúng đường dẫn
+import 'google_auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -56,6 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +153,25 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
               OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Đăng nhập với Google
+                onPressed: () async {
+                  final response = await GoogleAuthService().signInAndSendToBackend();
+                  final token = response?['access_token'];
+                  final user = response?['user'];
+
+                  await AuthService.saveLoginData(token, user);
+                  if (user != null) {
+                    print('✅ Token saved to local storage');
+                    final user = await AuthService.getUser();
+                    print('user: ${user}');
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đăng nhập thất bại')),
+                    );
+                  }
                 },
                 icon: Image.asset(
                   'assets/images/google.png',

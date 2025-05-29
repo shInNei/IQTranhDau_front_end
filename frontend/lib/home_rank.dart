@@ -1,14 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/socket_service.dart';
+import 'package:provider/provider.dart';
+import 'models/room.dart';
 import 'ranked.dart';
 import 'lobby.dart';
 import 'data/data.dart';
 import 'room.dart';
 import 'findmatch.dart';
 
-class HomeRankScreen extends StatelessWidget {
+class HomeRankScreen extends StatefulWidget  {
   final VoidCallback onShowRanked;
 
   const HomeRankScreen({super.key, required this.onShowRanked});
+
+  @override
+  State<HomeRankScreen> createState() => _HomeRankScreen();
+}
+
+class _HomeRankScreen extends State<HomeRankScreen> {
+  late SocketRomService socketService;
+  late VoidCallback onShowRanked;
+  @override
+  void initState() {
+    super.initState();
+    onShowRanked = widget.onShowRanked;
+    socketService = Provider.of<SocketRomService>(context, listen: false);
+    socketService.connect(
+      onConnected: () {
+        print('🟢 Socket ready! You can safely call actions now.');
+      },
+      onRoomUpdate:(data) => {},
+      onStartGame: (data) => {},
+      onRoomDestroyed: (data) => {},
+      onRoomCreated: (data) {},
+    );
+    socketService.setupListeners();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    socketService = Provider.of<SocketRomService>(context, listen: false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +140,7 @@ class HomeRankScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (context) => const LobbyScreen(autoCreate: true),
+                            (context) => LobbyScreen(autoCreate: true),
                       ),
                     );
                   },
@@ -145,4 +178,16 @@ class HomeRankScreen extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void dispose() {
+    print('❌home rank  removeListeners');
+    socketService.removeListeners(); // bạn cần định nghĩa hàm này
+    super.dispose();
+  }
+
 }
+
+
+
+
