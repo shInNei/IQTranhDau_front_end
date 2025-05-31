@@ -212,21 +212,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Practice Match'),
             ),
             const SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder:
-            //             (context) => PvPMatchScreen(
-            //           player1: currentUser,
-            //           player2: players[1],
-            //         ),
-            //       ),
-            //     );
-            //   },
-            //   child: const Text('PvP Match'),
-            // ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => PvPMatchScreen(
+                      player1: currentUser,
+                      player2: players[1],
+                    ),
+                  ),
+                );
+              },
+              child: const Text('PvP Match'),
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {

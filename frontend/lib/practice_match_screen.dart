@@ -51,12 +51,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (timeLeft == 0) {
         timeLeft = 15;
-        nextQuestion(changeQuestion: true);
-        if(currentQuestion + 1 < maxQuestions) {showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => rewardPopup(context),
-                        );} 
+        nextQuestion();
       } else {
         setState(() => timeLeft--);
       }
@@ -337,8 +332,6 @@ Future<bool> _showExitConfirmation() async {
       backgroundColor: Colors.white,
       body: 
       Stack(
-        // children: [SingleChildScrollView(
-        // child: Column(
         children: [ Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
@@ -551,8 +544,7 @@ Stack(
           
             // Options
             Expanded(
-              child: 
-              GridView.count(
+              child: GridView.count(
                 crossAxisCount: 2,
                 childAspectRatio: 2.5,
                 crossAxisSpacing: 10,
@@ -643,10 +635,6 @@ Stack(
       ),
     ),
   ),],
-
-        // ), ),],
-
-  
       ),
     ),
     );

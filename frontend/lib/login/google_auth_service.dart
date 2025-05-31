@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/constants.dart';
 
-
 class GoogleAuthService {
   final _googleSignIn = GoogleSignIn();
 

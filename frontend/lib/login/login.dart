@@ -6,11 +6,6 @@ import '../layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home.dart'; // 🔁 thay đúng đường dẫn
 import 'google_auth_service.dart';
-import '../data/UserProvider.dart';
-import 'package:provider/provider.dart';
-import '../models/player.dart';
-import 'package:frontend/constants.dart';
-import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -160,29 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
               OutlinedButton.icon(
                 onPressed: () async {
                   final response = await GoogleAuthService().signInAndSendToBackend();
-                  final token = response?['accessToken'];
+                  final token = response?['access_token'];
                   final user = response?['user'];
-
-                  print('Response from Google Auth: $response');
-                  print(user);
-
-                  // final player = Player.fromJson(user);
-                  // Provider.of<UserProvider>(context, listen: false).setCurrentUser(player);
-
-                  // final userProvider = Provider.of<UserProvider>(context, listen: false);
-                  // final currentUser = userProvider.currentUser;
-
-
-                  
-
-                  final test = await http.get(
-    Uri.parse('$SERVER_URL/users/me'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token', // If your API is protected
-    },
-  );
-                  print('Response from /me: ${test.body}');
 
                   await AuthService.saveLoginData(token, user);
                   if (user != null) {

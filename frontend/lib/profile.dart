@@ -27,7 +27,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Player? profileData;
+  Map<String, dynamic>? profileData;
   bool isLoading = true;
 
   String _currentSubscreen = 'main'; // 'main', 'update', 'password'
@@ -35,9 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-    fetchProfile(context);
-  });
+    fetchProfile();
   }
 
   @override
@@ -87,12 +85,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     await Future.delayed(const Duration(seconds: 2));
-    // Simulate fetching profile data from an API or database
-
-    // setState(() {
-    //   profileData = currentUser;
-    //   isLoading = false;
-    // });
+    setState(() {
+      profileData = {
+        'username': 'Sun',
+        'email': 'sun@example.com',
+        'level': 30,
+        'rank': 'Tập sự',
+        'elo': 76.87,
+        'points': 75,
+        'maxPoints': 100,
+        'avatar': 'https://i.imgur.com/zL4Krbz.png',
+      };
+      isLoading = false;
+    });
   }
 
   void _showSubscreen(String screen) {
@@ -222,7 +227,7 @@ Widget build(BuildContext context) {
         ),
         const SizedBox(height: 60),
         Text(
-          data.name,
+          data['username'],
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(
@@ -260,12 +265,12 @@ Widget build(BuildContext context) {
               rank,
               style: TextStyle(fontSize: 20, color: PlayerUtils.getRankColor(rank)),
             ),
-            // Text(
-            //   "${data['points']} điểm / ${data['maxPoints']}",
-            //   style: const TextStyle(fontSize: 14),
-            // ),
             Text(
-              "Elo ${data.elo}",
+              "${data['points']} điểm / ${data['maxPoints']}",
+              style: const TextStyle(fontSize: 14),
+            ),
+            Text(
+              "Elo ${data['elo'].toStringAsFixed(2)}%",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
