@@ -15,6 +15,7 @@ import 'socket_service.dart'; // 🔁 import đúng file bạn dùng
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'data/UserProvider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,7 @@ void main() async {
             create: (_) => SocketRomService(),
             dispose: (_, service) => service.dispose(),
           ),
+          ChangeNotifierProvider(create: (_) => UserProvider()),
         ],
         child: MyApp(
           seenOnboarding: seenOnboarding ?? false,
@@ -223,21 +225,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('Practice Match'),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => PvPMatchScreen(
-                      player1: currentUser,
-                      player2: players[1],
-                    ),
-                  ),
-                );
-              },
-              child: const Text('PvP Match'),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder:
+            //             (context) => PvPMatchScreen(
+            //           player1: currentUser,
+            //           player2: players[1],
+            //         ),
+            //       ),
+            //     );
+            //   },
+            //   child: const Text('PvP Match'),
+            // ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {

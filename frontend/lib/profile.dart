@@ -3,6 +3,10 @@ import 'profile_edit.dart';
 import 'changepass.dart';
 import 'ranked.dart';
 import 'login/login.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'models/player.dart';
+import 'services/APICall.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool resetToMain;
@@ -19,7 +23,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Map<String, dynamic>? profileData;
+  Player? profileData;
   bool isLoading = true;
 
   String _currentSubscreen = 'main'; // 'main', 'update', 'password'
@@ -27,7 +31,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    fetchProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    fetchProfile(context);
+  });
   }
 
   @override
@@ -45,21 +51,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> fetchProfile() async {
+  Future<void> fetchProfile(BuildContext context) async {
+
+
+    // final userProvider = Provider.of<UserProvider>(context, listen: false);
+    // final currentUser = userProvider.currentUser;
+
+    // if (currentUser == null) {
+    //   throw Exception('No user is currently logged in');
+    // }
+    
+    // print(currentUser.avatarPath);
+
+    // final api = ApiService(baseUrl: "$SERVER_URL/users/me", )
+
     await Future.delayed(const Duration(seconds: 2));
-    setState(() {
-      profileData = {
-        'username': 'Sun',
-        'email': 'sun@example.com',
-        'level': 30,
-        'rank': 'Tập sự',
-        'elo': 76.87,
-        'points': 75,
-        'maxPoints': 100,
-        'avatar': 'https://i.imgur.com/zL4Krbz.png',
-      };
-      isLoading = false;
-    });
+    // Simulate fetching profile data from an API or database
+
+    // setState(() {
+    //   profileData = currentUser;
+    //   isLoading = false;
+    // });
   }
 
   void _showSubscreen(String screen) {
@@ -139,18 +151,18 @@ Widget build(BuildContext context) {
 }
 
 
-  Widget _buildSubscreen(Map<String, dynamic> data) {
+  Widget _buildSubscreen(Player data) {
     if (_currentSubscreen == 'update') {
       return EditProfileScreen(
         onBack: () => _showSubscreen('main'),
-        username: data['username'],
-        email: data['email'],
-        imagePath: data['avatar'],
+        username: data.name,
+        email: data.rank,
+        imagePath: data.avatarPath,
       );
     } else if (_currentSubscreen == 'password') {
         return EditPasswordScreen(
         onBack: () => _showSubscreen('main'),
-        imagePath: data['avatar'],
+        imagePath: data.avatarPath,
       );
     } else if (_currentSubscreen == 'rank') {
       return RankedScreen(
@@ -179,18 +191,18 @@ Widget build(BuildContext context) {
               left: MediaQuery.of(context).size.width / 2 - 60,
               child: CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(data['avatar']),
+                backgroundImage: NetworkImage(data.avatarPath),
               ),
             ),
           ],
         ),
         const SizedBox(height: 60),
         Text(
-          data['username'],
+          data.name,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(
-          'Level ${data['level']}',
+          'Level ${data.level}',
           style: const TextStyle(fontSize: 18, color: Colors.orange),
         ),
         const SizedBox(height: 10),
@@ -221,15 +233,15 @@ Widget build(BuildContext context) {
           children: [
             const Icon(Icons.school, size: 80, color: Colors.teal),
             Text(
-              data['rank'],
+              data.rank,
               style: const TextStyle(fontSize: 16, color: Colors.purple),
             ),
+            // Text(
+            //   "${data['points']} điểm / ${data['maxPoints']}",
+            //   style: const TextStyle(fontSize: 14),
+            // ),
             Text(
-              "${data['points']} điểm / ${data['maxPoints']}",
-              style: const TextStyle(fontSize: 14),
-            ),
-            Text(
-              "Elo ${data['elo'].toStringAsFixed(2)}%",
+              "Elo ${data.elo}",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

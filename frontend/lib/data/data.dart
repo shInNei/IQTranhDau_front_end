@@ -8,7 +8,7 @@ final players = <Player>[
     level: 30,
     rank: 'Tập sự',
     rankPoint: 100,
-    elo: 76.87,
+    elo: 76,
     avatarPath: 'assets/images/sun.jpg',
   ),
   Player(
@@ -17,7 +17,7 @@ final players = <Player>[
     level: 90,
     rank: 'Master',
     rankPoint: 1000,
-    elo: 100.0,
+    elo: 100,
     avatarPath: 'assets/images/avatar.jpg',
   ),
   Player(
@@ -26,7 +26,7 @@ final players = <Player>[
     level: 45,
     rank: 'Thách đấu',
     rankPoint: 2000,
-    elo: 92.3,
+    elo: 92,
     avatarPath: 'assets/images/meo_luoi.jpg',
   ),
   Player(
@@ -35,7 +35,7 @@ final players = <Player>[
     level: 60,
     rank: 'Cao thủ',
     rankPoint: 1500,
-    elo: 85.5,
+    elo: 85,
     avatarPath: 'assets/images/bach_ho.jpg',
   ),
 ];

@@ -253,7 +253,7 @@ class PlayerCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Level ${player.level}',
+                    'Level ${5}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -262,7 +262,7 @@ class PlayerCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    player.rank,
+                    "abc",
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
