@@ -16,89 +16,76 @@ import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'data/UserProvider.dart';
+import 'layout.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final loggedIn = await AuthService.isLoggedIn();
   await Firebase.initializeApp();
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool? seenOnboarding = prefs.getBool('seenOnboarding');
+  bool seenOnboarding = prefs.getBool('seenOnboarding') ?? false;
+  bool loggedIn = await AuthService.isLoggedIn() ?? false;
 
   await SentryFlutter.init(
-  (options) {
-    options.dsn = 'https://ebe3dc58468e76c523b6379749bd95a6@o4509393287905280.ingest.us.sentry.io/4509393318510592';
-    options.sendDefaultPii = true;
-  },
-  appRunner: () => runApp(
-    SentryWidget(
-      child: MultiProvider(
-        providers: [
-          Provider<SocketRomService>(
-            create: (_) => SocketRomService(),
-            dispose: (_, service) => service.dispose(),
+    (options) {
+      options.dsn = 'https://ebe3dc58468e76c523b6379749bd95a6@o4509393287905280.ingest.us.sentry.io/4509393318510592';
+      options.sendDefaultPii = true;
+    },
+    appRunner: () => runApp(
+      SentryWidget(
+        child: MultiProvider(
+          providers: [
+            Provider<SocketRomService>(
+              create: (_) => SocketRomService(),
+              dispose: (_, service) => service.dispose(),
+            ),
+            ChangeNotifierProvider(create: (_) => UserProvider()),
+          ],
+          child: MyApp(
+            seenOnboarding: seenOnboarding,
+            loggedIn: loggedIn,
           ),
-          ChangeNotifierProvider(create: (_) => UserProvider()),
-        ],
-        child: MyApp(
-          seenOnboarding: seenOnboarding ?? false,
-          loggedIn: loggedIn ?? false,
         ),
       ),
     ),
-  ),
-);
-// runApp(
-//     MultiProvider(
-//       providers: [
-//         Provider<SocketRomService>(
-//           create: (_) => SocketRomService(),
-//           dispose: (_, service) => service.dispose(),
-//         ),
-//       ],
-//       child: MyApp(seenOnboarding: seenOnboarding ?? false, loggedIn: loggedIn ?? false),
-//     ),
-//   );
-// }
+  );
 }
+
 
 class MyApp extends StatelessWidget {
   final bool seenOnboarding;
   final bool loggedIn;
+
   const MyApp({super.key, required this.seenOnboarding, required this.loggedIn});
 
   @override
   Widget build(BuildContext context) {
+    print('seenOnboarding: $seenOnboarding, loggedIn: $loggedIn');
+    String initial = '/home';
+    if (!seenOnboarding) {
+      initial = '/onboarding';
+    } else if (!loggedIn) {
+      initial = '/login';
+    }
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      initialRoute: seenOnboarding == true ? '/' : ( loggedIn == false ? '/login' : '/onboarding'),
+      initialRoute: initial,
       routes: {
-        '/': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
+        '/home': (context) => MainPageLayout(),
+        '/test': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});

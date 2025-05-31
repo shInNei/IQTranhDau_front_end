@@ -5,7 +5,7 @@ import '../models/player.dart'; // Adjust to your file path
 
 class ApiService {
   final String baseUrl;
-  final String token;
+  final String? token;
 
   ApiService({required this.baseUrl, required this.token});
 

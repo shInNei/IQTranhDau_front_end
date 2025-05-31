@@ -1,44 +1,54 @@
 import '../models/player.dart';
+import '../models/levelprogress.dart';
 import '../models/room.dart';
 
 final players = <Player>[
   Player(
-    id:1,
+    id: 1,
     name: 'Sun',
-    level: 30,
-    rank: 'Tập sự',
-    rankPoint: 100,
-    elo: 76,
-    avatarPath: 'assets/images/sun.jpg',
+    email: 'sun@gmail.com',
+    avatarUrl: 'assets/images/sun.jpg',
+    elo: 1000,
+    exp: 500,
+    totalMatches: 20,
+    wins: 10,
+    losses: 10,
   ),
   Player(
-    id:1,
+    id: 2,
     name: 'Top1',
-    level: 90,
-    rank: 'Master',
-    rankPoint: 1000,
-    elo: 100,
-    avatarPath: 'assets/images/avatar.jpg',
+    email: 'top1@gmail.com',
+    avatarUrl: 'assets/images/avatar.jpg',
+    elo: 2000,
+    exp: 900,
+    totalMatches: 111,
+    wins: 100,
+    losses: 11,
   ),
   Player(
-    id:1,
+    id: 3,
     name: 'Mèo Lười',
-    level: 45,
-    rank: 'Thách đấu',
-    rankPoint: 2000,
-    elo: 92,
-    avatarPath: 'assets/images/meo_luoi.jpg',
+    email: 'meoluoi@gmail.com',
+    avatarUrl: 'assets/images/meo_luoi.jpg',
+    elo: 1900,
+    exp: 450,
+    totalMatches: 100,
+    wins: 80,
+    losses: 20,
   ),
   Player(
-    id:1,
+    id: 4,
     name: 'Bạch Hổ',
-    level: 60,
-    rank: 'Cao thủ',
-    rankPoint: 1500,
-    elo: 85,
-    avatarPath: 'assets/images/bach_ho.jpg',
+    email: 'bachho@gmail.com',
+    avatarUrl: 'assets/images/bach_ho.jpg',
+    elo: 1600,
+    exp: 600,
+    totalMatches: 120,
+    wins: 85,
+    losses: 35,
   ),
 ];
+
 
 /// Giả định user đang đăng nhập
 Player currentUser = players[0];

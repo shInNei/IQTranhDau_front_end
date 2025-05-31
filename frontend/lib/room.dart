@@ -233,7 +233,7 @@ class PlayerCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 80,
-              backgroundImage: NetworkImage(player.avatarPath),
+              backgroundImage: NetworkImage(player.avatarUrl),
               backgroundColor: Colors.grey[200],
             ),
             const SizedBox(width: 16),

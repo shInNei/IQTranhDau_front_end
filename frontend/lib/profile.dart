@@ -7,6 +7,10 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'models/player.dart';
 import 'services/APICall.dart';
+import 'package:frontend/constants.dart';
+import 'services/auth_service.dart';
+import 'models/playerutils.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   final bool resetToMain;
@@ -63,7 +67,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     
     // print(currentUser.avatarPath);
 
-    // final api = ApiService(baseUrl: "$SERVER_URL/users/me", )
+    final api = ApiService(baseUrl: SERVER_URL, token: await AuthService.getToken());
+
+    try {
+      final user = await api.getCurrentUser();
+      print(user);
+      
+      setState(() {
+      profileData = user;
+      isLoading = false;
+      print('Profile data fetched successfully: $profileData');
+    });
+    } catch (e) {
+      print('Error fetching profile: $e');
+      setState(() {
+        isLoading = false;
+        profileData = null; // Handle error case
+      });
+    }
 
     await Future.delayed(const Duration(seconds: 2));
     // Simulate fetching profile data from an API or database
@@ -80,7 +101,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  @override
 @override
 Widget build(BuildContext context) {
   if (isLoading) {
@@ -88,7 +108,8 @@ Widget build(BuildContext context) {
   }
 
   final data = profileData!;
-
+  
+  
   // If subscreen is 'rank', return Scaffold without AppBar
   if (_currentSubscreen == 'rank') {
     return Scaffold(
@@ -117,6 +138,7 @@ Widget build(BuildContext context) {
         TextButton(
           onPressed: () {
             // Logout logic
+            AuthService.logout();
             print("User logged out");
             Navigator.pushReplacement(
       context,
@@ -152,17 +174,19 @@ Widget build(BuildContext context) {
 
 
   Widget _buildSubscreen(Player data) {
+    final rank = PlayerUtils.getRankFromElo(data.elo);
+
     if (_currentSubscreen == 'update') {
       return EditProfileScreen(
         onBack: () => _showSubscreen('main'),
         username: data.name,
-        email: data.rank,
-        imagePath: data.avatarPath,
+        email: data.email,
+        imagePath: data.avatarUrl,
       );
     } else if (_currentSubscreen == 'password') {
         return EditPasswordScreen(
         onBack: () => _showSubscreen('main'),
-        imagePath: data.avatarPath,
+        imagePath: data.avatarUrl,
       );
     } else if (_currentSubscreen == 'rank') {
       return RankedScreen(
@@ -191,7 +215,7 @@ Widget build(BuildContext context) {
               left: MediaQuery.of(context).size.width / 2 - 60,
               child: CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(data.avatarPath),
+                backgroundImage: NetworkImage(data.avatarUrl),
               ),
             ),
           ],
@@ -202,7 +226,7 @@ Widget build(BuildContext context) {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(
-          'Level ${data.level}',
+          'Level ${data.exp}',
           style: const TextStyle(fontSize: 18, color: Colors.orange),
         ),
         const SizedBox(height: 10),
@@ -233,8 +257,8 @@ Widget build(BuildContext context) {
           children: [
             const Icon(Icons.school, size: 80, color: Colors.teal),
             Text(
-              data.rank,
-              style: const TextStyle(fontSize: 16, color: Colors.purple),
+              rank,
+              style: TextStyle(fontSize: 20, color: PlayerUtils.getRankColor(rank)),
             ),
             // Text(
             //   "${data['points']} điểm / ${data['maxPoints']}",

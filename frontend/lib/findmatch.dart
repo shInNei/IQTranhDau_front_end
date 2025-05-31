@@ -32,7 +32,7 @@ class NoMatchPage extends StatelessWidget {
               backgroundColor: Colors.transparent,
               child: ClipOval(
                 child: Image.asset(
-                  currentUser.avatarPath,
+                  currentUser.avatarUrl,
                   fit: BoxFit.cover,
                   width: 160,
                   height: 160,
@@ -137,7 +137,7 @@ class _CreatingMatchPageState extends State<CreatingMatchPage> {
               backgroundColor: Colors.transparent,
               child: ClipOval(
                 child: Image.asset(
-                  currentUser.avatarPath,
+                  currentUser.avatarUrl,
                   fit: BoxFit.cover,
                   width: 160,
                   height: 160,

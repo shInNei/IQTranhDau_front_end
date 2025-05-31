@@ -1,85 +1,37 @@
-import 'dart:math';
-
-// class Player {
-//   final int id;
-//   final String name;
-//   int level;
-//   final String rank;
-//   int rankPoint;
-//   double elo;
-//   final String avatarPath;
-//   int score;
-
-//   Player({
-//     required this.id,
-//     required this.name,
-//     this.level = 0,
-//     this.rank = '',
-//     this.rankPoint = 0,
-//     this.elo = 0.0,
-//     this.avatarPath = '',
-//     this.score = 0,
-//   });
-
-//   factory Player.fromJson(Map<String, dynamic> json) {
-//     return Player(
-//       id: json['id'] as int,
-//       name: json['name'] as String,
-//       level: json['level'] ?? 0,
-//       rank: json['rank'] ?? '',
-//       rankPoint: json['rankPoint'] ?? 0,
-//       elo: (json['elo'] ?? 0.0).toDouble(),
-//       avatarPath: json['avatarPath'] ?? '',
-//       score: json['score'] ?? 0,
-//     );
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     return {
-//       'id': id,
-//       'name': name,
-//       'level': level,
-//       'rank': rank,
-//       'rankPoint': rankPoint,
-//       'elo': elo,
-//       'avatarPath': avatarPath,
-//       'score': score,
-//     };
-//   }
-// }
-
-// New Player class that suit backend
 class Player {
   final int id;
   final String name;
-  int level;
-  String rank;
-  int rankPoint;
-  int elo;
-  String avatarPath;
-  int score;
+  final String email;
+  final String avatarUrl;
+  final int elo;
+  final int exp;
+  final int totalMatches;
+  final int wins;
+  final int losses;
 
   Player({
     required this.id,
     required this.name,
-    this.level = 0,
-    this.rank = '',
-    this.rankPoint = 0,
-    this.elo = 0,
-    this.avatarPath = '',
-    this.score = 0,
+    required this.email,
+    required this.avatarUrl,
+    required this.elo,
+    required this.exp,
+    required this.totalMatches,
+    required this.wins,
+    required this.losses,
   });
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
       id: json['id'] as int,
-      name: json['name'] as String,
-      level: json['level'] ?? 0,
-      rank: json['rank'] ?? '',
-      rankPoint: json['rankPoint'] ?? 0,
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      avatarUrl: json['avatar_url'] ?? '',
       elo: json['elo'] ?? 0,
-      avatarPath: json['avatarPath'] ?? '',
-      score: json['score'] ?? 0,
+      exp: json['exp'] ?? 0,
+      totalMatches: json['total_matches'] ?? 0,
+      wins: json['wins'] ?? 0,
+      losses: json['losses'] ?? 0,
     );
   }
 
@@ -87,12 +39,13 @@ class Player {
     return {
       'id': id,
       'name': name,
-      'level': level,
-      'rank': rank,
-      'rankPoint': rankPoint,
+      'email': email,
+      'avatar_url': avatarUrl,
       'elo': elo,
-      'avatarPath': avatarPath,
-      'score': score,
+      'exp': exp,
+      'total_matches': totalMatches,
+      'wins': wins,
+      'losses': losses,
     };
   }
 }

@@ -366,13 +366,13 @@ Future<bool> _showExitConfirmation() async {
           children: [
             AspectRatio(
               aspectRatio: 1,
-              child: roomPlayers![0].avatarPath.startsWith('http')
+              child: roomPlayers![0].avatarUrl.startsWith('http')
                   ? Image.network(
-                      roomPlayers![0].avatarPath,
+                      roomPlayers![0].avatarUrl,
                       fit: BoxFit.cover,
                     )
                   : Image.asset(
-                      roomPlayers![0].avatarPath,
+                      roomPlayers![0].avatarUrl,
                       fit: BoxFit.cover,
                     ),
             ),
@@ -387,7 +387,7 @@ Future<bool> _showExitConfirmation() async {
             ),
             SizedBox(height: 2),
             Text(
-              roomPlayers![0].rank,
+              roomPlayers![0].elo.toString(),
               style: TextStyle(
                 color: Colors.purple,
                 fontSize: 20,

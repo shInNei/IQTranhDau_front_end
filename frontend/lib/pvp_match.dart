@@ -363,9 +363,9 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _playerCard(
-                  avatar: widget.player1.avatarPath,
+                  avatar: widget.player1.avatarUrl,
                   name: widget.player1.name,
-                  rank: widget.player1.rank, //should be rank here
+                  rank: widget.player1.elo.toString(), //should be rank here
                   point: player1Point,
                   rankPoint: widget.player1.elo,
                   isCurrentPlayer: currentUser == widget.player1,
@@ -379,10 +379,10 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                   ),
                 ),
                 _playerCard(
-                  avatar: widget.player2.avatarPath,
+                  avatar: widget.player2.avatarUrl,
                   name: widget.player2.name,
-                  rank: widget.player2.rank,
-                  point: player2Point,
+                  rank: widget.player2.elo.toString(),
+                  point: player2Point,  
                   rankPoint: widget.player2.elo,
                   isCurrentPlayer: currentUser == widget.player2,
                 ),

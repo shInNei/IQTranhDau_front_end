@@ -36,4 +36,13 @@ class GoogleAuthService {
       return null;
     }
   }
+
+  Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut();
+      print('✅ Google account signed out');
+    } catch (e) {
+      print('❌ Sign out error: $e');
+    }
+  }
 }
