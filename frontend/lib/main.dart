@@ -201,8 +201,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialPageRoute(
                     builder:
                         (context) => const QuizScreen(
-                      topicID: 0,
-                      playerIDs: ["0", "1", "2"],
+                      category: 'Toán Học',
                     ),
                   ),
                 );

@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../home.dart'; // 🔁 thay đúng đường dẫn
 import '../constants.dart';
 import 'google_auth_service.dart';
+import 'package:email_validator/email_validator.dart';
+import 'forgetpass.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -26,13 +28,29 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _obscureText = !_obscureText;
     });
+    }
+    
+  bool isValidEmail(String email) {
+    final emailRegex = RegExp(
+      r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+    );
+    return emailRegex.hasMatch(email);
   }
+
 
   void _login() async {
     // Check if fields are empty
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() {
         _errorText = 'Tên Đăng Nhập hoặc Mật Khẩu không được để trống';
+      });
+      return;
+    }
+
+    final email = _emailController.text.trim();
+    if (!isValidEmail(email)){
+      setState(() {
+        _errorText = 'Email không hợp lệ';
       });
       return;
     }
@@ -156,6 +174,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: () {
                     // TODO: Điều hướng đến trang "Quên mật khẩu"
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ForgetPasswordScreen(),
+                      ),
+                    );
                   },
                   child: const Text(
                     'Quên mật khẩu?',

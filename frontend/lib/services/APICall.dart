@@ -1,7 +1,8 @@
-// lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/player.dart'; // Adjust to your file path
+import '../models/player.dart'; 
+import '../models/category.dart';
+import '../models/question.dart'; 
 
 class ApiService {
   final String baseUrl;
@@ -90,4 +91,50 @@ class ApiService {
     }
   }
 
+  Future<List<Category>> getCategories() async {
+    final url = Uri.parse('$baseUrl/categories');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('📦 Categories response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Category.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load categories: ${response.statusCode} ${response.reasonPhrase}');
+    }
+  }
+
+  Future<List<Question>> getQuestions({
+    required String category,
+    required int total,
+  }) async {
+    final url = Uri.parse('$baseUrl/gemini/getQuestion');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'category': category,
+        'total': total,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Question.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load questions: ${response.statusCode} ${response.reasonPhrase}');
+    }
+  }
 }

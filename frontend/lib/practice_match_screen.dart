@@ -1,14 +1,24 @@
 import 'dart:async';
+import 'dart:math';
 import 'data/data.dart';
 import 'models/player.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'practice_screen.dart';
+import 'services/APICall.dart';
+import 'services/auth_service.dart';
+import 'constants.dart';
+import 'models/category.dart';
+import 'models/question.dart';
+import 'models/player.dart';
+import 'models/playerutils.dart';
 
 class QuizScreen extends StatefulWidget {
-  final int topicID;
-  final List<String> playerIDs;
-  const QuizScreen({super.key, required this.topicID, required this.playerIDs});
+  // final int topicID;
+  // final List<String> playerIDs;
+  final String category;
+
+  const QuizScreen({super.key, required this.category});
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -17,6 +27,9 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateMixin {
 
   // Phần Reward sẽ chỉnh sửa data trong backend, thêm sau
+
+  bool _isLoading = true;
+
 
   late final AnimationController _lottieController;
   bool showAnimation = false;
@@ -28,11 +41,11 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   bool usedFiftyFifty = false;
   bool usedChangeQuestion = false;
   List<int> shownAnswers = [0, 1, 2, 3]; // For 50:50 logic
-  int maxQuestions = 2;
+  int maxQuestions = 15;
   int questionID = 0;
 
-  List<Player>? roomPlayers;
-  List<Map<String, dynamic>>? topicQuestions;
+  Player? currentPlayer;
+  List<Question>? topicQuestions;
 
   @override
   void initState() {
@@ -41,11 +54,42 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
     vsync: this,
     duration: Duration(seconds: 1), // shorter duration = faster
   );
-    fetchPlayers();
-    fetchTopics();
-    startTimer();
+    initializeGame(widget.category);
+    // fetchPlayers();
+    // fetchTopics();
   }
 
+  Future<void> initializeGame(String category) async {
+    try {
+      final token = await AuthService.getToken();
+      final apiService = ApiService(baseUrl: SERVER_URL, token: token);
+
+      final userData = await apiService.getCurrentUser();
+
+      final questions = await apiService.getQuestions(category: category, total: maxQuestions + 5);
+
+      var correctIndex = questions![questionID].options
+        .indexOf(questions![questionID].correctAnswer);
+
+      print(questions[questionID]);
+
+      print('Correct Index: $correctIndex');
+
+
+      print('User Data: $userData');
+      print('Questions: $questions');
+
+      setState(() {
+        currentPlayer = userData;
+        topicQuestions = questions;
+        _isLoading = false;
+      });
+      startTimer();
+    } catch(e) {
+      print('Error initializing game: $e');
+      // Handle error, maybe show a dialog or a snackbar
+    }
+  }
 
   void startTimer() {
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -72,28 +116,33 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   void applyFiftyFifty() {
     if (usedFiftyFifty) return;
     usedFiftyFifty = true;
-    var correctIndex = topicQuestions![questionID]['options']
-        .indexOf(topicQuestions![questionID]['correctAnswer']);
+
+    int correctIndex = topicQuestions![questionID]
+        .options
+        .indexOf(topicQuestions![questionID].correctAnswer);
+    print('Correct Index: $correctIndex');
+
+    final rand = Random();
+    final wrongIndices = List.generate(4, (i) => i)..remove(correctIndex);
+    int randomWrong = wrongIndices[rand.nextInt(wrongIndices.length)];
+
     setState(() {
-      shownAnswers = [correctIndex];
-      while (shownAnswers.length < 2) {
-        int rand = (0 + (3 * (1.0 - (1.0 / (1 + shownAnswers.length))))).toInt();
-        if (!shownAnswers.contains(rand)) shownAnswers.add(rand);
-      }
+      shownAnswers = [correctIndex, randomWrong];
+      shownAnswers.shuffle(); // optional, randomize order
     });
   }
 
-  Future<void> fetchPlayers() async {
-    setState((){
-      roomPlayers = players;
-    });
-  }
+  // Future<void> fetchPlayers() async {
+  //   setState((){
+  //     roomPlayers = players;
+  //   });
+  // }
 
-  Future<void> fetchTopics() async {
-    setState((){
-     topicQuestions = generalKnowledgeQuestions;
-    });
-  }
+  // Future<void> fetchTopics() async {
+  //   setState((){
+  //    topicQuestions = generalKnowledgeQuestions;
+  //   });
+  // }
 
   void changeQuestion() {
     if (usedChangeQuestion) return;
@@ -301,6 +350,17 @@ Future<bool> _showExitConfirmation() async {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Container(
+        color: Colors.white,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.blue,
+            strokeWidth: 2,
+          ),
+        ),
+      );
+    }
     return PopScope(
     canPop: false,
     onPopInvoked: (didPop) async {
@@ -359,19 +419,20 @@ Future<bool> _showExitConfirmation() async {
           children: [
             AspectRatio(
               aspectRatio: 1,
-              child: roomPlayers![0].avatarUrl.startsWith('http')
+              child: currentPlayer!.avatarUrl.startsWith('http')
                   ? Image.network(
-                      roomPlayers![0].avatarUrl,
+                      currentPlayer!.avatarUrl,
                       fit: BoxFit.cover,
                     )
                   : Image.asset(
-                      roomPlayers![0].avatarUrl,
+                      'assets/images/default_image.png',
                       fit: BoxFit.cover,
                     ),
             ),
             SizedBox(height: 6),
             Text(
-              roomPlayers![0].name,
+              currentPlayer!.name,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
@@ -380,9 +441,9 @@ Future<bool> _showExitConfirmation() async {
             ),
             SizedBox(height: 2),
             Text(
-              roomPlayers![0].elo.toString(),
+              PlayerUtils.getRankFromElo(currentPlayer!.elo),
               style: TextStyle(
-                color: Colors.purple,
+                color: PlayerUtils.getRankColor(PlayerUtils.getRankFromElo(currentPlayer!.elo)),
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
               ),
@@ -476,7 +537,7 @@ Stack(
         ),
         SizedBox(height: 8),
         Text(
-          topicQuestions![questionID]['question'],
+          topicQuestions![questionID].question,
           style: TextStyle(
             color: Colors.blue,
             fontSize: 20,
@@ -546,16 +607,16 @@ Stack(
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
-                childAspectRatio: 2.5,
+                childAspectRatio: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 children: shownAnswers.map((i) {
-                  String option = topicQuestions![questionID]['options'][i];
+                  String option = topicQuestions![questionID].options[i];
                   return ElevatedButton(
                     onPressed: () {
-                      isCorrectAnswer = option == topicQuestions![questionID]['correctAnswer'];
+                      isCorrectAnswer = option == topicQuestions![questionID].correctAnswer;
                       setState(() {
                         showAnimation = true;
                         timer?.cancel();
@@ -578,12 +639,12 @@ Stack(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding: EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.all(10),
                     ),
                     child: Text(
                       option.toString(),
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

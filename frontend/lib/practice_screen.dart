@@ -1,61 +1,106 @@
 import 'package:flutter/material.dart';
+import 'services/APICall.dart';
+import 'models/category.dart';
+import 'constants.dart';
+import 'services/auth_service.dart';
 import 'practice_match_screen.dart';
 
-class PracticeScreen extends StatelessWidget {
-  final VoidCallback? onBack;
+class PracticeScreen extends StatefulWidget {
+  final VoidCallback onBack;
 
-  PracticeScreen({this.onBack});
-
-  final List<Map<String, dynamic>> topics = [
-    {"name": "Học tập", "icon": Icons.school},
-    {"name": "Vật lý", "icon": Icons.science},
-    {"name": "Toán học", "icon": Icons.calculate},
-    {"name": "Tin học", "icon": Icons.computer},
-    {"name": "Động vật", "icon": Icons.pets},
-    {"name": "Thực vật", "icon": Icons.local_florist},
-  ];
+  const PracticeScreen({super.key, required this.onBack});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Các bộ câu hỏi'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: onBack, // use the callback to notify HomeScreen
-        ),
-      ),
-      body: ListView.builder(
-        itemCount: topics.length,
-        itemBuilder: (context, index) {
-          return Card(
-            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListTile(
-              title: Text(
-                topics[index]["name"],
-                style: TextStyle(fontSize: 18),
-              ),
-              trailing: Icon(
-                topics[index]["icon"],
-                size: 40,
-                color: Colors.blue,
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => QuizScreen(
-                      topicID: index,
-                      playerIDs: ["0", "1", "2"],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
-    );
+  _PracticeScreenState createState() => _PracticeScreenState();
+}
+
+class _PracticeScreenState extends State<PracticeScreen> {
+  late Future<List<Category>> _futureCategories;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureCategories = _loadCategories();
   }
+
+  Future<List<Category>> _loadCategories() async {
+    final token = await AuthService.getToken();
+    final apiService = ApiService(baseUrl: SERVER_URL, token: token);
+    try {
+      return await apiService.getCategories();
+    } catch (e) {
+      print('Error fetching categories: $e');
+      throw Exception('Failed to load categories');
+    }
+  }
+
+  IconData getCategoryIcon(String name) {
+    final lowerName = name.toLowerCase();
+
+    if(lowerName.contains('toán')) return Icons.calculate;
+    if (lowerName.contains('văn')) return Icons.menu_book;
+    if (lowerName.contains('lý')) return Icons.science;
+    if (lowerName.contains('hóa')) return Icons.science_outlined;
+    if (lowerName.contains('sinh')) return Icons.biotech;
+    if (lowerName.contains('địa')) return Icons.public;
+    if (lowerName.contains('sử')) return Icons.history_edu;
+    if (lowerName.contains('tiếng anh') || lowerName.contains('english')) return Icons.language;
+    return Icons.category; // Default icon
+  }
+
+
+  @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Các bộ câu hỏi'),
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: widget.onBack,
+          ),
+        ),
+        body: FutureBuilder<List<Category>>(
+          future: _futureCategories,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Lỗi: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('Không có dữ liệu'));
+            } else {
+              final categories = snapshot.data!;
+              return ListView.builder(
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  final icon = getCategoryIcon(category.name);
+                  return Card(
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ListTile(
+                      leading: Icon(icon, size: 40, color: Colors.blue),
+                      title: Text(
+                        category.name,
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuizScreen(
+                              category: category.name
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              );
+            }
+          },
+        ),
+      );
+    }
 }
