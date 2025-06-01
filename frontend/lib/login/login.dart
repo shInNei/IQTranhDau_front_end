@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/data/data.dart';
+import 'package:frontend/services/APICall.dart';
 import '../services/auth_service.dart';
 import 'register.dart';
 import '../layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home.dart'; // 🔁 thay đúng đường dẫn
+import '../constants.dart';
 import 'google_auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,40 +28,76 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _login() {
-    setState(() {
-      // Check if fields are empty
-      if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+  void _login() async {
+    // Check if fields are empty
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      setState(() {
         _errorText = 'Tên Đăng Nhập hoặc Mật Khẩu không được để trống';
-        return;
-      }
+      });
+      return;
+    }
 
-      // Check credentials against fake user data
-      bool isAuthenticated = false;
-      int? playerIndex;
-      for (var user in userData) {
-        if (user["username"] == _emailController.text &&
-            user["password"] == _passwordController.text) {
-          isAuthenticated = true;
-          playerIndex = user["playerIndex"];
-          break;
-        }
-      }
+    ApiService apiService = ApiService(baseUrl: SERVER_URL, token: null);
 
-      if (isAuthenticated && playerIndex != null) {
-        _errorText = null;
-        // Set the currentUser to the corresponding Player
-        currentUser = players[playerIndex];
-        // Navigate to the main page on successful login
+    try {
+      final data = await apiService.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      // Optionally, you can use the `data` here
+      print('🔐 Login successful: $data');
+      
+      final token = data['accessToken'];
+      final user = data['user'];
+      await AuthService.saveLoginData(token, user);
+      if (user != null) {
+        print('✅ Token saved to local storage');
+        final user = await AuthService.getUser();
+        print('user: ${user}');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainPageLayout()),
-        );
-      } else {
-        _errorText = 'Tên Đăng Nhập hoặc Mật Khẩu không đúng. Vui lòng thử lại';
-      }
-    });
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đăng nhập thất bại')),
+          );
+        }  
+    } catch (e) {
+      setState(() {
+        _errorText = e is Exception ? e.toString().replaceFirst('Exception: ', '') : 'Lỗi không xác định';
+      });
+      return;
+    }
+
+    // // Check credentials against fake user data
+    // bool isAuthenticated = false;
+    // int? playerIndex;
+    // for (var user in userData) {
+    //   if (user["username"] == _emailController.text &&
+    //       user["password"] == _passwordController.text) {
+    //     isAuthenticated = true;
+    //     playerIndex = user["playerIndex"];
+    //     break;
+    //   }
+    // }
+
+    // if (isAuthenticated && playerIndex != null) {
+    //   setState(() {
+    //     _errorText = null;
+    //     currentUser = players[playerIndex];
+    //   });
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => const MainPageLayout()),
+    //   );
+    // } else {
+    //   setState(() {
+    //     _errorText = 'Tên Đăng Nhập hoặc Mật Khẩu không đúng. Vui lòng thử lại';
+    //   });
+    // }
   }
+
 
 
 
@@ -87,8 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _emailController,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
-                  hintText: '012345678',
-                  labelText: 'Tên đăng nhập/ Số điện thoại',
+                  hintText: '@gmail.com',
+                  labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -155,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
               OutlinedButton.icon(
                 onPressed: () async {
                   final response = await GoogleAuthService().signInAndSendToBackend();
-                  final token = response?['access_token'];
+                  final token = response?['accessToken'];
                   final user = response?['user'];
 
                   await AuthService.saveLoginData(token, user);

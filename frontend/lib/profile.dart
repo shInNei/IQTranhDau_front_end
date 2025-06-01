@@ -27,7 +27,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Map<String, dynamic>? profileData;
+  Player? profileData;
   bool isLoading = true;
 
   String _currentSubscreen = 'main'; // 'main', 'update', 'password'
@@ -35,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    fetchProfile();
+    fetchProfile(context);
   }
 
   @override
@@ -84,20 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
 
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() {
-      profileData = {
-        'username': 'Sun',
-        'email': 'sun@example.com',
-        'level': 30,
-        'rank': 'Tập sự',
-        'elo': 76.87,
-        'points': 75,
-        'maxPoints': 100,
-        'avatar': 'https://i.imgur.com/zL4Krbz.png',
-      };
-      isLoading = false;
-    });
+    // await Future.delayed(const Duration(seconds: 2));
   }
 
   void _showSubscreen(String screen) {
@@ -112,7 +99,7 @@ Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 
-  final data = profileData!;
+  final data = profileData;
   
   
   // If subscreen is 'rank', return Scaffold without AppBar
@@ -178,20 +165,33 @@ Widget build(BuildContext context) {
 }
 
 
-  Widget _buildSubscreen(Player data) {
-    final rank = PlayerUtils.getRankFromElo(data.elo);
+  Widget _buildSubscreen(Player? data) {
+
+    final currentPlayer = Player(
+        id: data?.id ?? -1,
+        name: data?.name ?? "Không xác định",
+        email: data?.email ?? "Không xác định",
+        avatarUrl: data?.avatarUrl ?? "",
+        elo: data?.elo ?? 0,
+        exp: data?.exp ?? 0,
+        totalMatches: data?.totalMatches ?? 0,
+        wins: data?.wins ?? 0,
+        losses: data?.losses ?? 0,
+      );
+
+    final rank = PlayerUtils.getRankFromElo(currentPlayer.elo);
 
     if (_currentSubscreen == 'update') {
       return EditProfileScreen(
         onBack: () => _showSubscreen('main'),
-        username: data.name,
-        email: data.email,
-        imagePath: data.avatarUrl,
+        username: currentPlayer.name,
+        email: currentPlayer.email,
+        imagePath: currentPlayer.avatarUrl,
       );
     } else if (_currentSubscreen == 'password') {
         return EditPasswordScreen(
         onBack: () => _showSubscreen('main'),
-        imagePath: data.avatarUrl,
+        imagePath: currentPlayer.avatarUrl,
       );
     } else if (_currentSubscreen == 'rank') {
       return RankedScreen(
@@ -220,18 +220,20 @@ Widget build(BuildContext context) {
               left: MediaQuery.of(context).size.width / 2 - 60,
               child: CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(data.avatarUrl),
+                backgroundImage: currentPlayer.avatarUrl.isNotEmpty
+                    ? NetworkImage(currentPlayer.avatarUrl)
+                    : const AssetImage('assets/images/default_image.png') as ImageProvider,
               ),
             ),
           ],
         ),
         const SizedBox(height: 60),
         Text(
-          data['username'],
+          profileData!.name,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(
-          'Level ${data.exp}',
+          'Level ${PlayerUtils.getLevelFromExp(currentPlayer.exp) + 1}',
           style: const TextStyle(fontSize: 18, color: Colors.orange),
         ),
         const SizedBox(height: 10),
@@ -265,12 +267,12 @@ Widget build(BuildContext context) {
               rank,
               style: TextStyle(fontSize: 20, color: PlayerUtils.getRankColor(rank)),
             ),
+            // Text(
+            //   "${data['points']} điểm / ${data['maxPoints']}",
+            //   style: const TextStyle(fontSize: 14),
+            // ),
             Text(
-              "${data['points']} điểm / ${data['maxPoints']}",
-              style: const TextStyle(fontSize: 14),
-            ),
-            Text(
-              "Elo ${data['elo'].toStringAsFixed(2)}%",
+              "Elo ${profileData!.elo}",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

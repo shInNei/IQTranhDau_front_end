@@ -253,7 +253,7 @@ class PlayerCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Level ${player.level}',
+                    'Level ${player.exp}', // Ở đây có thể là level 
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -262,7 +262,7 @@ class PlayerCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    player.rank,
+                    player.email, // cho nay la rank
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

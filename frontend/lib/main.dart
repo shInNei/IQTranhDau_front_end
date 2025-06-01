@@ -15,7 +15,6 @@ import 'socket_service.dart'; // 🔁 import đúng file bạn dùng
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'data/UserProvider.dart';
 import 'layout.dart';
 
 void main() async {
@@ -38,8 +37,7 @@ void main() async {
             Provider<SocketRomService>(
               create: (_) => SocketRomService(),
               dispose: (_, service) => service.dispose(),
-            ),
-            ChangeNotifierProvider(create: (_) => UserProvider()),
+            )
           ],
           child: MyApp(
             seenOnboarding: seenOnboarding,

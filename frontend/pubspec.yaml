@@ -46,6 +46,7 @@ dependencies:
   firebase_auth: ^4.15.0
   http: ^1.0.0
   jwt_decoder: ^2.0.1
+  email_validator: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +88,7 @@ flutter:
     - assets/images/refresh.png
     - assets/images/fire_festival.png
     - assets/images/newbie.png
+    - assets/images/default_image.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

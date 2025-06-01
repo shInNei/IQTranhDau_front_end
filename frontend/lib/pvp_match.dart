@@ -133,7 +133,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
   }
 
   Widget rewardPopup(BuildContext context) {
-    int rankDelta = widget.player1.rankPoint - widget.player2.rankPoint;
+    int rankDelta = widget.player1.elo - widget.player2.elo;
     rankDelta = rankDelta.abs();
     rankDelta = (rankDelta / 5).round();
     final String rankDeltaText =
@@ -367,7 +367,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                   name: widget.player1.name,
                   rank: widget.player1.elo.toString(), //should be rank here
                   point: player1Point,
-                  rankPoint: widget.player1.rankPoint,
+                  rankPoint: widget.player1.elo,
                   isCurrentPlayer: currentUser == widget.player1,
                 ),
                 Text(
