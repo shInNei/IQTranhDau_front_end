@@ -41,7 +41,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   bool usedFiftyFifty = false;
   bool usedChangeQuestion = false;
   List<int> shownAnswers = [0, 1, 2, 3]; // For 50:50 logic
-  int maxQuestions = 15;
+  int maxQuestions = 10;
   int questionID = 0;
 
   Player? currentPlayer;
@@ -50,6 +50,8 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    checkSignIn();
+
     _lottieController = AnimationController(
     vsync: this,
     duration: Duration(seconds: 1), // shorter duration = faster
@@ -57,6 +59,16 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
     initializeGame(widget.category);
     // fetchPlayers();
     // fetchTopics();
+  }
+
+  void checkSignIn() async {
+        if (!await AuthService.isLoggedIn()) {
+      // If not logged in, redirect to login screen
+      await AuthService.logout(); // Ensure user is logged out
+
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
   }
 
   Future<void> initializeGame(String category) async {
@@ -87,6 +99,25 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
       startTimer();
     } catch(e) {
       print('Error initializing game: $e');
+      // Handle error, maybe show a dialog or a snackbar
+    }
+  }
+
+  Future<void> updateResult(int exp) async {
+    try {
+      final token = await AuthService.getToken();
+      final apiService = ApiService(baseUrl: SERVER_URL, token: token);
+
+      if (currentPlayer != null) {
+        await apiService.updateAfterMatch(
+          userId: currentPlayer!.id.toString(),
+          eloChange: 0,
+          expGain: exp,
+          isWin: false, // PracticeMatch do not update elo and win
+        );
+      }
+    } catch (e) {
+      print('Error updating result: $e');
       // Handle error, maybe show a dialog or a snackbar
     }
   }
@@ -150,7 +181,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
     nextQuestion(changeQuestion: true);
   }
 
-  Widget rewardPopup(BuildContext context) {
+  Widget rewardPopup(BuildContext context, int exp, int score) {
   return Dialog(
     backgroundColor: Colors.transparent,
     insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -201,7 +232,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
               children: [
                 _rewardRow("Tổng Điểm", "$score"),
                 const SizedBox(height: 12),
-                _rewardRow("EXP", "+500"),
+                _rewardRow("EXP", "$exp"),
               ],
             ),
           ),
@@ -212,21 +243,21 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
             color: const Color(0xFFFFE082),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  "+1",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orangeAccent,
-                  ),
-                ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.flash_on,
-                  color: Colors.orangeAccent,
-                ),
-              ],
+              // children: [
+              //   Text(
+              //     "+1",
+              //     style: TextStyle(
+              //       fontSize: 16,
+              //       fontWeight: FontWeight.bold,
+              //       color: Colors.orangeAccent,
+              //     ),
+              //   ),
+              //   SizedBox(width: 4),
+              //   Icon(
+              //     Icons.flash_on,
+              //     color: Colors.orangeAccent,
+              //   ),
+              // ],
             ),
           ),
 
@@ -672,7 +703,7 @@ Stack(
           onLoaded: (composition) {
             _lottieController
               ..duration = composition.duration * 0.5 // 2x speed
-              ..forward().whenComplete(() {
+              ..forward().whenComplete(() async {
         // After the animation is fully played, start the timer
         if(currentQuestion + 1 < maxQuestions) {
         nextQuestion(correct: isCorrectAnswer);
@@ -680,11 +711,14 @@ Stack(
         } 
         else {
           score += 10;
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => rewardPopup(context),
-                        );
+          final exp = await PlayerUtils.calculateExpGain(score);
+          print('Exp gained: $exp');
+          updateResult(exp);
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => rewardPopup(context, exp, score),
+          );
         }
       });
           },

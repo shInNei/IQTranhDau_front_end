@@ -20,8 +20,20 @@ class _PracticeScreenState extends State<PracticeScreen> {
   @override
   void initState() {
     super.initState();
+    checkSignIn();
     _futureCategories = _loadCategories();
   }
+
+  void checkSignIn() async {
+        if (!await AuthService.isLoggedIn()) {
+      // If not logged in, redirect to login screen
+      await AuthService.logout(); // Ensure user is logged out
+
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+  }
+
 
   Future<List<Category>> _loadCategories() async {
     final token = await AuthService.getToken();

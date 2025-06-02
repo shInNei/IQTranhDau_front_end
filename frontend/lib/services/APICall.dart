@@ -137,4 +137,112 @@ class ApiService {
       throw Exception('Failed to load questions: ${response.statusCode} ${response.reasonPhrase}');
     }
   }
+
+  Future<List<Player>> fetchLeaderboard() async {
+    final url = Uri.parse('$baseUrl/leaderboard');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('🏆 Leaderboard response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body)['data'];
+      return data.map((json) => Player.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load leaderboard: ${response.statusCode} ${response.reasonPhrase}');
+    }
+  }
+
+  Future<void> updateAfterMatch({
+    required String userId,
+    required int eloChange,
+    required int expGain,
+    required bool isWin,
+  }) async {
+    final url = Uri.parse('$baseUrl/users/$userId/update-after-match');
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'eloChange': eloChange,
+        'expGain': expGain,
+        'isWin': isWin,
+      }),
+    );
+
+    print('🎮 Update After Match response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Cập nhật sau trận đấu thất bại: ${response.statusCode} ${response.reasonPhrase}');
+    }
+  }
+
+  Future<void> changeName(String newName) async {
+    final url = Uri.parse('$baseUrl/users/me/change-name');
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'newName': newName,
+      }),
+    );
+
+    print('✏️ Change Name response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Đổi tên thất bại: ${response.statusCode} ${response.reasonPhrase}');
+    }
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse('$baseUrl/users/me/change-password');
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+    );
+
+    print('🔒 Change Password response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode != 200) {
+      // ✅ Thử parse body để lấy lỗi cụ thể từ server
+      String errorMessage = 'Đổi mật khẩu thất bại';
+      try {
+        final body = jsonDecode(response.body);
+        if (body is Map && body.containsKey('message')) {
+          errorMessage = body['message'];
+        }
+      } catch (_) {
+        // Nếu parse lỗi, dùng body raw luôn
+        errorMessage = response.body;
+      }
+
+      throw Exception(errorMessage);
+      }
+  }
+
 }

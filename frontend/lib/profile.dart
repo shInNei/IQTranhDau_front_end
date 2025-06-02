@@ -35,7 +35,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    checkSignIn();
     fetchProfile(context);
+  }
+
+  void checkSignIn() async {
+    if (!await AuthService.isLoggedIn()) {
+      // If not logged in, redirect to login screen
+      await AuthService.logout(); // Ensure user is logged out
+
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
   }
 
   @override
@@ -82,15 +93,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         isLoading = false;
         profileData = null; // Handle error case
       });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
     }
 
     // await Future.delayed(const Duration(seconds: 2));
   }
 
   void _showSubscreen(String screen) {
-    setState(() {
-      _currentSubscreen = screen;
-    });
+    if (screen == 'main') {
+      setState(() {
+        isLoading = true;         // Show loading indicator
+        _currentSubscreen = screen;
+      });
+      fetchProfile(context);       // Re-fetch data
+    } else {
+      setState(() {
+        _currentSubscreen = screen;
+      });
+    }
   }
 
 @override
@@ -292,7 +315,26 @@ Widget build(BuildContext context) {
         ),
         const SizedBox(height: 16),
         ElevatedButton(
-          onPressed: () => _showSubscreen('password'),
+          onPressed: () async{
+
+            if (await AuthService.isGoogleLogin()) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Không khả dụng"),
+                  content: const Text("Chức năng đổi mật khẩu chỉ áp dụng cho tài khoản đăng ký thông thường."),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("OK"),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              _showSubscreen('password');
+            }
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
             minimumSize: const Size(300, 50),

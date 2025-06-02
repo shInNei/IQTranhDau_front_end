@@ -1,4 +1,6 @@
 import 'levelprogress.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
 class PlayerUtils {
@@ -42,7 +44,7 @@ class PlayerUtils {
       case 'Cao thủ':
         return Colors.purple;
       case 'Kim cương':
-        return Colors.tealAccent;
+        return Colors.indigo;
       case 'Bạch kim':
         return Colors.lightBlueAccent;
       case 'Vàng':
@@ -57,5 +59,21 @@ class PlayerUtils {
         return Colors.black;
     }
   }
+
+  static Future<int> calculateExpGain(int score) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    int timesPlayed = prefs.getInt(todayKey) ?? 0;
+
+    double baseExp = score * 0.5;
+    double decayFactor = (1 - timesPlayed * 0.1).clamp(0.3, 1.0);
+    int expGain = (baseExp * decayFactor).floor();
+
+    await prefs.setInt(todayKey, timesPlayed + 1);
+
+    return expGain;
+  }
+
 }
 

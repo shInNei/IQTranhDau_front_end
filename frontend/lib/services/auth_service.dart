@@ -4,10 +4,11 @@ import '../login/google_auth_service.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class AuthService {
-  static Future<void> saveLoginData(String token, Map<String, dynamic> user) async {
+  static Future<void> saveLoginData(String token, Map<String, dynamic> user, bool isGoogleLogin) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('access_token', token);
     await prefs.setString('user', jsonEncode(user));
+    await prefs.setBool('is_google_login', isGoogleLogin);
   }
 
   static Future<bool> isLoggedIn() async {
@@ -37,7 +38,7 @@ class AuthService {
     return access_token;
   }
 
-static Future<Map<String, dynamic>?> getUser() async {
+  static Future<Map<String, dynamic>?> getUser() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = prefs.getString('user');
     if (jsonStr != null) {
@@ -46,11 +47,16 @@ static Future<Map<String, dynamic>?> getUser() async {
     return null;
   }
 
+  static Future<bool> isGoogleLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_google_login') ?? false;
+  }
 
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
     await prefs.remove('user');
+    await prefs.remove('is_google_login');
     // Sign out from Google if applicable
     try {
       await GoogleAuthService().signOut();

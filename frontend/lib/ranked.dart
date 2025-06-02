@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'models/player.dart';
+import 'models/playerutils.dart';
+import 'services/APICall.dart';
+import 'services/auth_service.dart';
+import 'constants.dart';
 
 class RankedScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -10,36 +15,53 @@ class RankedScreen extends StatefulWidget {
 }
 
 class _RankedScreenState extends State<RankedScreen> {
-  List<Map<String, dynamic>> rankings = [];
+  List<Player> rankings = [];
 
   @override
   void initState() {
     super.initState();
+    checkSignIn();
     // Replace this with your actual API call
     fetchRankingData();
+  }
+
+  void checkSignIn() async {
+    if (!await AuthService.isLoggedIn()) {
+      // If not logged in, redirect to login screen
+      await AuthService.logout(); // Ensure user is logged out
+
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
   }
 
   void fetchRankingData() async {
     // Simulated API response
     // TODO: Replace with actual API call
+
+
+    try {
+      final api = ApiService(
+        baseUrl: SERVER_URL, // Replace with your API base URL
+        token: await AuthService.getToken(), // Get the token from your auth service
+      );
+      final leaderboard = await api.fetchLeaderboard(); // Replace with your actual API method
+
+      setState(() {
+        rankings = leaderboard;
+      });
+
+    } catch(e) {
+      print('Error fetching rankings: $e');
+      // Handle error appropriately, e.g., show a snackbar or dialog
+      setState(() {
+        rankings = []; // Clear rankings on error
+      });
+    }
     await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      rankings = [
-        {"name": "Người tình mùa đông", "score": 27855, "title": "Thách Đấu"},
-        {"name": "Mái ấm gia đình", "score": 13825, "title": "Cao Thủ"},
-        {"name": "Chị Phiến", "score": 11212, "title": "Cao Thủ"},
-        {"name": "Đời Mộng Du", "score": 10992, "title": "Cao Thủ"},
-        {"name": "IC5555", "score": 10110, "title": "Cao Thủ"},
-        {"name": "A Sin", "score": 10002, "title": "Cao Thủ"},
-        {"name": "Thích Ăn Mặn", "score": 9992, "title": "Cao Thủ"},
-        {"name": "Thiên Thu", "score": 9991, "title": "Cao Thủ"},
-        {"name": "Đi Không Em", "score": 8001, "title": "Cao Thủ"},
-      ];
-      
-    });
   }
 
-  Widget _buildRankTile(int index, Map<String, dynamic> data) {
+  Widget _buildRankTile(int index, Player data) {
     final rank = index + 1;
     final isTop3 = rank <= 3;
     final colors = [
@@ -83,12 +105,12 @@ class _RankedScreenState extends State<RankedScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data["name"],
+                  data.name,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
-                  data["title"] ?? "Hạng chưa rõ",
-                  style: TextStyle(color: Colors.purple, fontSize: 14),
+                  PlayerUtils.getRankFromElo(data.elo) ?? "Hạng chưa rõ",
+                  style: TextStyle(color: PlayerUtils.getRankColor(PlayerUtils.getRankFromElo(data.elo)), fontSize: 14),
                 ),
               ],
             ),
@@ -104,7 +126,7 @@ class _RankedScreenState extends State<RankedScreen> {
                 ),
               ),
               Text(
-                '${data["score"]}',
+                '${data.elo}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,

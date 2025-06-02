@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'services/auth_service.dart';
+import 'services/APICall.dart';
+import 'constants.dart';
 
 class EditPasswordScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -17,10 +20,12 @@ class EditPasswordScreen extends StatefulWidget {
 class _EditPasswordScreenState extends State<EditPasswordScreen> {
   final TextEditingController currentPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
+  final TextEditingController confirmNewPasswordController = TextEditingController();
 
   bool isSaving = false;
   bool showCurrentPassword = false;
   bool showNewPassword = false;
+  bool showConfirmPassword = false;
   String? currentPasswordError;
 
   final String hardcodedPassword = "password123"; // simulate stored password
@@ -29,36 +34,107 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
   void dispose() {
     currentPasswordController.dispose();
     newPasswordController.dispose();
+    confirmNewPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveChanges() async {
-    final currentPassword = currentPasswordController.text;
-    final newPassword = newPasswordController.text;
-
-    // Validate current password
-    if (currentPassword != hardcodedPassword) {
-      setState(() {
-        currentPasswordError = "Mật khẩu hiện tại không đúng";
-      });
+  void checkSignIn() async {
+    if (!await AuthService.isLoggedIn()) {
+      await AuthService.logout();
+      Navigator.pushReplacementNamed(context, '/login');
       return;
-    } else {
-      setState(() {
-        currentPasswordError = null; // clear error
-        isSaving = true;
-      });
+    }
+  }
+
+
+  bool _isValidPassword(String password) {
+    final regex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$');
+    return regex.hasMatch(password);
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Lỗi"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () => Navigator.of(context).pop(),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDialog(String title, String content) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future<void> _saveChanges() async {
+    final currentPassword = currentPasswordController.text.trim();
+    final newPassword = newPasswordController.text.trim();
+    final confirmPassword = confirmNewPasswordController.text.trim();
+
+    if (currentPassword.isEmpty ||
+        newPassword.isEmpty ||
+        confirmPassword.isEmpty) {
+      _showErrorDialog("Vui lòng nhập đầy đủ thông tin.");
+      return;
     }
 
-    // Simulate API call
+    if (!_isValidPassword(newPassword)) {
+      _showErrorDialog("Mật khẩu mới phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số.");
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      _showErrorDialog("Mật khẩu mới và nhập lại mật khẩu không khớp.");
+      return;
+    }
+
+    checkSignIn();
+
+    try {
+      final apiService = ApiService(baseUrl: SERVER_URL, token: await AuthService.getToken());
+      final response = await apiService.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+    } catch(e) {
+      _showErrorDialog(e.toString().replaceAll("Exception: ", ""));
+      return;
+    }
+
+    setState(() {
+      isSaving = true;
+    });
+
     await Future.delayed(const Duration(seconds: 2));
 
     setState(() {
       isSaving = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cập nhật mật khẩu thành công')),
-    );
+    await _showDialog('Thành công', 'Cập nhật tên người dùng thành công');
 
     widget.onBack(); // Return to previous screen
   }
@@ -71,7 +147,6 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              // Header
               Container(
                 height: 125,
                 decoration: const BoxDecoration(
@@ -84,7 +159,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
               ),
               const Center(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 40),
+                  padding: EdgeInsets.only(top: 0),
                   child: Text(
                     "Đổi mật khẩu",
                     style: TextStyle(
@@ -95,7 +170,6 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                   ),
                 ),
               ),
-              // Avatar
               Positioned(
                 bottom: -50,
                 left: MediaQuery.of(context).size.width / 2 - 60,
@@ -106,23 +180,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                       radius: 60,
                       backgroundImage: widget.imagePath.startsWith('http')
                           ? NetworkImage(widget.imagePath)
-                          : AssetImage(widget.imagePath) as ImageProvider,
-                    ),
-                    Positioned(
-                      bottom: 4,
-                      right: 4,
-                      child: CircleAvatar(
-                        radius: 14,
-                        backgroundColor: Colors.white,
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.camera_alt,
-                              size: 16, color: Colors.orange),
-                          onPressed: () {
-                            // TODO: Add image picking logic
-                          },
-                        ),
-                      ),
+                          : AssetImage('assets/images/default_image.png') as ImageProvider,
                     ),
                   ],
                 ),
@@ -176,6 +234,27 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: confirmNewPasswordController,
+                  obscureText: !showConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Nhập lại mật khẩu mới',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        showConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          showConfirmPassword = !showConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: isSaving ? null : _saveChanges,
@@ -196,3 +275,4 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
     );
   }
 }
+

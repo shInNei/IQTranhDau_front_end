@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       final token = data['accessToken'];
       final user = data['user'];
-      await AuthService.saveLoginData(token, user);
+      await AuthService.saveLoginData(token, user, false);
       if (user != null) {
         print('✅ Token saved to local storage');
         final user = await AuthService.getUser();
@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   final token = response?['accessToken'];
                   final user = response?['user'];
 
-                  await AuthService.saveLoginData(token, user);
+                  await AuthService.saveLoginData(token, user, true);
                   if (user != null) {
                     print('✅ Token saved to local storage');
                     final user = await AuthService.getUser();
@@ -248,20 +248,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Đăng nhập với Facebook
-                },
-                icon: const Icon(Icons.facebook, color: Colors.blue),
-                label: const Text('Tiếp tục với tài khoản Facebook'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
+              // const SizedBox(height: 16),
+              // OutlinedButton.icon(
+              //   onPressed: () {
+              //     // TODO: Đăng nhập với Facebook
+              //   },
+              //   icon: const Icon(Icons.facebook, color: Colors.blue),
+              //   label: const Text('Tiếp tục với tài khoản Facebook'),
+              //   style: OutlinedButton.styleFrom(
+              //     padding: const EdgeInsets.symmetric(vertical: 16),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(8),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 32),
               Center(
                 child: Row(
