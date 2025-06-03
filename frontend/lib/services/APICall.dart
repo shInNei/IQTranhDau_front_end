@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/player.dart'; 
 import '../models/category.dart';
 import '../models/question.dart'; 
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ApiService {
   final String baseUrl;
@@ -322,4 +323,13 @@ class ApiService {
       throw Exception('Không thể lấy hạng của người dùng: ${response.statusCode} ${response.reasonPhrase}');
     }
   }
+
+  Future<void> ensureInternetConnection() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      throw Exception('Không có kết nối internet. Vui lòng kiểm tra lại.');
+    }
+  }
+
+
 }

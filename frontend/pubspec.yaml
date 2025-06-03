@@ -47,6 +47,7 @@ dependencies:
   http: ^1.0.0
   jwt_decoder: ^2.0.1
   email_validator: ^2.0.1
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:

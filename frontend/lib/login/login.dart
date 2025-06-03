@@ -216,6 +216,16 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
               OutlinedButton.icon(
                 onPressed: () async {
+                  final api = ApiService(baseUrl: SERVER_URL, token: null);
+                  try {
+                    await api.ensureInternetConnection();
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('$e')),
+                    );
+                    return;
+                  }
+
                   final response = await GoogleAuthService().signInAndSendToBackend();
                   final token = response?['accessToken'];
                   final user = response?['user'];

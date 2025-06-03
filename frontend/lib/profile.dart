@@ -49,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+
   @override
   void didUpdateWidget(covariant ProfileScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -78,7 +79,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final api = ApiService(baseUrl: SERVER_URL, token: await AuthService.getToken());
 
+    
     try {
+
+      await api.ensureInternetConnection();
+
       final user = await api.getCurrentUser();
       print(user);
       
@@ -89,10 +94,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
     } catch (e) {
       print('Error fetching profile: $e');
-      setState(() {
-        isLoading = false;
-        profileData = null; // Handle error case
-      });
+
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Đã xảy ra lỗi'),
+        content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    await AuthService.logout(); // Ensure user is logged out on error
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginScreen()),
