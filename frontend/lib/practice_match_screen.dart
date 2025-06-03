@@ -423,7 +423,8 @@ Future<bool> _showExitConfirmation() async {
       backgroundColor: Colors.white,
       body: 
       Stack(
-        children: [ Padding(
+        children: [SingleChildScrollView(
+        child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           children: [
@@ -635,8 +636,9 @@ Stack(
             SizedBox(height: 16),
           
             // Options
-            Expanded(
-              child: GridView.count(
+            // Expanded(
+              // child: 
+              GridView.count(
                 crossAxisCount: 2,
                 childAspectRatio: 2,
                 crossAxisSpacing: 10,
@@ -682,11 +684,11 @@ Stack(
                   );
                 }).toList(),
               ),
-            ),
+            // ),
 
           ],
         ),
-        
+        ),
       ),
       if (showAnimation)
   AnimatedOpacity(
@@ -728,8 +730,9 @@ Stack(
           repeat: false,
         ),
       ),
-    ),
-  ),],
+    )
+         ),  
+         ],
       ),
     ),
     );
