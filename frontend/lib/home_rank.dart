@@ -28,13 +28,14 @@ class _HomeRankScreen extends State<HomeRankScreen> {
     socketService.connect(
       onConnected: () {
         print('🟢 Socket ready! You can safely call actions now.');
+        socketService.setupListeners();
       },
       onRoomUpdate:(data) => {},
       onStartGame: (data) => {},
       onRoomDestroyed: (data) => {},
       onRoomCreated: (data) {},
     );
-    socketService.setupListeners();
+
   }
 
   @override

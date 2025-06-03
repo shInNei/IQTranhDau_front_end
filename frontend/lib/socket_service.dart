@@ -6,6 +6,7 @@ import 'package:frontend/constants.dart';
 import 'package:frontend/models/player.dart';
 import 'package:frontend/models/room.dart';
 import 'package:frontend/room.dart';
+import 'services/auth_service.dart';
 
 class SocketRomService {
   static final SocketRomService _instance = SocketRomService._internal();
@@ -85,7 +86,7 @@ class SocketRomService {
     Function(dynamic)? onRoomList,
     String baseUrl = SERVER_URL,
     VoidCallback? onConnected,
-  }) {
+  }) async {
     if (_connected) {
       setupListeners(onRoomUpdate: onRoomUpdate, onRoomList: onRoomList);
 
@@ -101,8 +102,24 @@ class SocketRomService {
       print('⚠️ Already connected → setup listeners again');
       return;
     }
+    print('🔌 Connecting to socket server at $baseUrl...');
+    final token = await AuthService.getToken(); // Lấy token từ SharedPreferences
 
-    socket = io(baseUrl, {'transports': ['websocket'], 'autoConnect': false});
+    if (token == null) {
+      print('❌ Token không tồn tại');
+      return;
+    }
+
+    socket = io(
+      baseUrl,
+      <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': false,
+        'auth': {
+          'token': token,
+        },
+      },
+    );
     socket.connect();
 
     socket.onConnect((_) {
@@ -116,6 +133,13 @@ class SocketRomService {
     socket.on('start_game', onStartGame);
     socket.on('room_destroyed', onRoomDestroyed);
 
+    socket.onConnectError((err) {
+      print('❌ Connect error: $err');
+    });
+
+    socket.onError((err) {
+      print('❌ General socket error: $err');
+    });
     socket.onDisconnect((_) {
       print('❌ Disconnected');
       _connected = false;

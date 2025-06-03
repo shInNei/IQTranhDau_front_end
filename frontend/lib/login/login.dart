@@ -231,6 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   final user = response?['user'];
 
                   await AuthService.saveLoginData(token, user, true);
+
                   if (user != null) {
                     print('✅ Token saved to local storage');
                     final user = await AuthService.getUser();
