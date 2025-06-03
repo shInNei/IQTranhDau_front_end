@@ -63,7 +63,15 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                         print("Gửi yêu cầu đặt lại mật khẩu");
                         if (_formKey.currentState!.validate()) {
                           ApiService apiService = ApiService(baseUrl: SERVER_URL, token: null);
-
+                          try {
+                            await apiService.ensureInternetConnection();
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$e')),
+                            );
+                            return;
+                          }
+                          
                           try {
                             await apiService.forgotPassword(
                               emailController.text.trim(),

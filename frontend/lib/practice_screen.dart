@@ -39,6 +39,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final token = await AuthService.getToken();
     final apiService = ApiService(baseUrl: SERVER_URL, token: token);
     try {
+      await apiService.ensureInternetConnection();
+    } catch (e) {
+      print('Error checking internet connection: $e');
+      throw Exception('No internet connection');
+    }
+    try {
       return await apiService.getCategories();
     } catch (e) {
       print('Error fetching categories: $e');

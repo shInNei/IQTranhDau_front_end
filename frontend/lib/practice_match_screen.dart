@@ -75,7 +75,7 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
     try {
       final token = await AuthService.getToken();
       final apiService = ApiService(baseUrl: SERVER_URL, token: token);
-
+      await apiService.ensureInternetConnection();
       final userData = await apiService.getCurrentUser();
 
       final questions = await apiService.getQuestions(category: category, total: maxQuestions + 5);

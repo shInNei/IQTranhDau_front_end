@@ -109,12 +109,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
-    await AuthService.logout(); // Ensure user is logged out on error
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
     }
 
     // await Future.delayed(const Duration(seconds: 2));

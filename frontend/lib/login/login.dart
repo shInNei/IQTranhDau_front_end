@@ -56,7 +56,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     ApiService apiService = ApiService(baseUrl: SERVER_URL, token: null);
-
+    try {
+      await apiService.ensureInternetConnection();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$e')),
+      );
+      return;
+    }
+    
     try {
       final data = await apiService.login(
         email: _emailController.text,

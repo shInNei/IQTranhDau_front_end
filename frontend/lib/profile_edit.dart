@@ -84,6 +84,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final apiService = ApiService(baseUrl: SERVER_URL, token: await AuthService.getToken());
 
     try {
+      await apiService.ensureInternetConnection();
       await apiService.changeName(
         updatedUsername
       );

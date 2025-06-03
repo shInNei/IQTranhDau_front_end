@@ -33,6 +33,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     setState(() => isLoading = true);
 
     final apiService = ApiService(baseUrl: SERVER_URL, token: null);
+
+    try {
+      await apiService.ensureInternetConnection();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$e')),
+      );
+      return;
+    }
+
     try {
       await apiService.resetPassword(
         email: widget.email,

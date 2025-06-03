@@ -49,6 +49,8 @@ class _RankedScreenState extends State<RankedScreen> {
         baseUrl: SERVER_URL, // Replace with your API base URL
         token: await AuthService.getToken(), // Get the token from your auth service
       );
+      await api.ensureInternetConnection();
+
       final leaderboard = await api.fetchLeaderboard(); // Replace with your actual API method
 
       final rankIndex = await api.getMyRank();
@@ -62,10 +64,22 @@ class _RankedScreenState extends State<RankedScreen> {
     } catch(e) {
       print('Error fetching rankings: $e');
       // Handle error appropriately, e.g., show a snackbar or dialog
-      setState(() {
-        rankings = []; // Clear rankings on error
-        _isLoading = false;
-      });
+      print('Error fetching profile: $e');
+
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Đã xảy ra lỗi'),
+        content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
     }
     await Future.delayed(const Duration(milliseconds: 500));
   }
