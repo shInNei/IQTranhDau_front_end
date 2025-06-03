@@ -3,24 +3,32 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:frontend/home_rank.dart';
 import 'package:frontend/models/player.dart';
+import 'package:frontend/services/auth_service.dart';
 import 'data/data.dart';
 import 'lobby.dart';
 import 'models/player.dart';
 import 'home.dart';
 import 'layout.dart';
+import 'services/socketPvP.dart';
 
 class PvPMatchScreen extends StatefulWidget {
   final Player player1;
   final Player player2;
+  final String matchId;
 
-  const PvPMatchScreen({Key? key, required this.player1, required this.player2})
-    : super(key: key);
+  const PvPMatchScreen({
+    Key? key,
+    required this.player1,
+    required this.player2,
+    required this.matchId,
+  }) : super(key: key);
 
   @override
   _PvPMatchScreenState createState() => _PvPMatchScreenState();
 }
 
 class _PvPMatchScreenState extends State<PvPMatchScreen> {
+  int? currentUserId;
   int currentQuestion = 0;
   final int totalQuestions = 15;
   bool usedFiftyFifty = false;
@@ -31,20 +39,61 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
   List<int> shownAnswers = [0, 1, 2, 3];
   int timeLeft = 15;
   Timer? timer;
+  late SocketService socketService;
+  bool matchEnded = false;
 
   List<Map<String, dynamic>>? topic;
+
+  Future<void> _loadCurrentUserId() async {
+    currentUserId = await AuthService.getUserId();
+  }
 
   @override
   void initState() {
     super.initState();
+    socketService = SocketService();
+    socketService.connect(currentUserId, widget.matchId);
+    _listenToSocket();
     selectTopics().then((_) {
       startTimer();
     });
   }
 
+  void _listenToSocket() {
+    socketService.messages.listen(
+      (message) {
+        if (!mounted) return;
+        setState(() {
+          switch (message['type']) {
+            case 'score_update':
+              if (message['playerId'] == widget.player1.id) {
+                player1Point = message['score'];
+              } else if (message['playerId'] == widget.player2.id) {
+                player2Point = message['score'];
+              }
+              break;
+            case 'match_result':
+              timer?.cancel();
+              matchEnded = true;
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => rewardPopup(context, message['result']),
+              );
+              break;
+          }
+        });
+      },
+      onError: (error) {
+        print('Socket error: $error');
+      },
+    );
+  }
+
   @override
   void dispose() {
     timer?.cancel();
+    socketService.disconnect();
     super.dispose();
   }
 
@@ -71,6 +120,8 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
   }
 
   void nextQuestion({bool correct = false, bool changeQuestion = false}) {
+    if (matchEnded) return;
+
     if (correct) {
       int point = 0;
       if (timeLeft > 10) {
@@ -80,11 +131,15 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
       } else if (timeLeft > 0) {
         point = 1;
       }
-      if (currentUser == widget.player2) {
-        player1Point += point;
-      } else {
-        player2Point += point;
-      }
+      setState(() {
+        if (currentUser == widget.player1) {
+          player1Point += point;
+          socketService.sendScoreUpdate(player1Point);
+        } else {
+          player2Point += point;
+          socketService.sendScoreUpdate(player2Point);
+        }
+      });
     }
 
     setState(() {
@@ -95,14 +150,16 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
 
     if (currentQuestion >= totalQuestions) {
       timer?.cancel();
-      showDialog(context: context, barrierDismissible: false, builder: (context) => rewardPopup(context));
+      socketService.sendMatchComplete(
+        currentUser == widget.player1 ? player1Point : player2Point,
+      );
     } else {
       startTimer();
     }
   }
 
   void applyFiftyFifty() {
-    if (usedFiftyFifty || topic == null) return;
+    if (usedFiftyFifty || topic == null || matchEnded) return;
     setState(() {
       usedFiftyFifty = true;
       final correct = topic![questionID]['correctAnswer'];
@@ -120,7 +177,8 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
   void changeQuestion() {
     if (usedChangeQuestion ||
         topic == null ||
-        currentQuestion >= totalQuestions)
+        currentQuestion >= totalQuestions ||
+        matchEnded)
       return;
     setState(() {
       usedChangeQuestion = true;
@@ -132,12 +190,15 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
     startTimer();
   }
 
-  Widget rewardPopup(BuildContext context) {
+  Widget rewardPopup(BuildContext context, Map<String, dynamic> result) {
     int rankDelta = widget.player1.elo - widget.player2.elo;
     rankDelta = rankDelta.abs();
     rankDelta = (rankDelta / 5).round();
     final String rankDeltaText =
         (rankDelta >= 0 ? '+' : '-') + rankDelta.toString();
+    final String winner =
+        result['winnerId'] == currentUser.id ? 'You Win!' : 'You Lose!';
+    final int expGain = result['expGain'] ?? 500;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -175,7 +236,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            'Phần thưởng',
+                            winner,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -195,7 +256,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                           children: [
                             _rewardRow('Xếp hạng', rankDeltaText),
                             const SizedBox(height: 12),
-                            _rewardRow('EXP', '+500'),
+                            _rewardRow('EXP', '+$expGain'),
                           ],
                         ),
                       ),
@@ -241,8 +302,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                           Navigator.of(dialogContext).pop();
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
-                              builder:
-                                  (context) => MainPageLayout()
+                              builder: (context) => MainPageLayout(),
                             ),
                             (Route<dynamic> route) => false,
                           );
@@ -269,23 +329,21 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                           Navigator.of(dialogContext).pop();
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
-                              builder:
-                                  (context) => MainPageLayout()
+                              builder: (context) => MainPageLayout(),
                             ),
                             (Route<dynamic> route) => false,
                           );
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => HomeScreen(
-                                resetToMain: false,
-                              ),
+                              builder:
+                                  (context) => HomeScreen(resetToMain: false),
                             ),
                           );
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => LobbyScreen(autoCreate: false,
+                              builder:
+                                  (context) => LobbyScreen(autoCreate: false),
                             ),
-                            )
                           );
                         },
                         child: Container(
@@ -346,7 +404,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('Building PvPMatchScreen'); // Debug log
+    print('Building PvPMatchScreen');
     if (topic == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -365,7 +423,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                 _playerCard(
                   avatar: widget.player1.avatarUrl,
                   name: widget.player1.name,
-                  rank: widget.player1.elo.toString(), //should be rank here
+                  rank: widget.player1.elo.toString(),
                   point: player1Point,
                   rankPoint: widget.player1.elo,
                   isCurrentPlayer: currentUser == widget.player1,
@@ -382,7 +440,7 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                   avatar: widget.player2.avatarUrl,
                   name: widget.player2.name,
                   rank: widget.player2.elo.toString(),
-                  point: player2Point,  
+                  point: player2Point,
                   rankPoint: widget.player2.elo,
                   isCurrentPlayer: currentUser == widget.player2,
                 ),
@@ -442,7 +500,6 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Chỉ giữ 2 nút trợ giúp: 50/50 và Đổi câu hỏi
                 Row(
                   children: [
                     _iconButton(
@@ -498,15 +555,19 @@ class _PvPMatchScreenState extends State<PvPMatchScreen> {
                   shownAnswers.map((i) {
                     final option = topic![questionID]['options'][i];
                     return ElevatedButton(
-                      onPressed: () {
-                        final isCorrect =
-                            option == topic![questionID]['correctAnswer'];
-                        timer?.cancel();
-                        nextQuestion(correct: isCorrect);
-                        setState(() {
-                          timeLeft = 15;
-                        });
-                      },
+                      onPressed:
+                          matchEnded
+                              ? null
+                              : () {
+                                final isCorrect =
+                                    option ==
+                                    topic![questionID]['correctAnswer'];
+                                timer?.cancel();
+                                nextQuestion(correct: isCorrect);
+                                setState(() {
+                                  timeLeft = 15;
+                                });
+                              },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueGrey.shade800,
                         foregroundColor: Colors.white,

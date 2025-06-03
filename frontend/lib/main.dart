@@ -27,34 +27,36 @@ void main() async {
 
   await SentryFlutter.init(
     (options) {
-      options.dsn = 'https://ebe3dc58468e76c523b6379749bd95a6@o4509393287905280.ingest.us.sentry.io/4509393318510592';
+      options.dsn =
+          'https://ebe3dc58468e76c523b6379749bd95a6@o4509393287905280.ingest.us.sentry.io/4509393318510592';
       options.sendDefaultPii = true;
     },
-    appRunner: () => runApp(
-      SentryWidget(
-        child: MultiProvider(
-          providers: [
-            Provider<SocketRomService>(
-              create: (_) => SocketRomService(),
-              dispose: (_, service) => service.dispose(),
-            )
-          ],
-          child: MyApp(
-            seenOnboarding: seenOnboarding,
-            loggedIn: loggedIn,
+    appRunner:
+        () => runApp(
+          SentryWidget(
+            child: MultiProvider(
+              providers: [
+                Provider<SocketRomService>(
+                  create: (_) => SocketRomService(),
+                  dispose: (_, service) => service.dispose(),
+                ),
+              ],
+              child: MyApp(seenOnboarding: seenOnboarding, loggedIn: loggedIn),
+            ),
           ),
         ),
-      ),
-    ),
   );
 }
-
 
 class MyApp extends StatelessWidget {
   final bool seenOnboarding;
   final bool loggedIn;
 
-  const MyApp({super.key, required this.seenOnboarding, required this.loggedIn});
+  const MyApp({
+    super.key,
+    required this.seenOnboarding,
+    required this.loggedIn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +86,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -201,9 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   MaterialPageRoute(
                     builder:
-                        (context) => const QuizScreen(
-                      category: 'Toán Học',
-                    ),
+                        (context) => const QuizScreen(category: 'Toán Học'),
                   ),
                 );
               },
@@ -214,34 +213,16 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => PvPMatchScreen(
-                      player1: currentUser,
-                      player2: players[1],
-                    ),
-                  ),
-                );
-              },
-              child: const Text('PvP Match'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => OfflineScreen(),
-                  ),
+                  MaterialPageRoute(builder: (context) => OfflineScreen()),
                 );
               },
               child: const Text('Offline_Screen'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed:() => throw StateError('This is test exception'),
-              child: const Text('Sentry_test'),)
+              onPressed: () => throw StateError('This is test exception'),
+              child: const Text('Sentry_test'),
+            ),
           ],
         ),
       ),

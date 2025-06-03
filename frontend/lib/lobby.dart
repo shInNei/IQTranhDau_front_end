@@ -25,6 +25,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       _currentSubscreen = screen;
     });
   }
+
   List<Room> rooms = [];
 
   @override
@@ -32,31 +33,36 @@ class _LobbyScreenState extends State<LobbyScreen> {
     super.initState();
     socketService = Provider.of<SocketRomService>(context, listen: false);
     // Gửi yêu cầu lấy danh sách phòng
-    socketService.setupListeners(onRoomCreated:onRoomCreated, onRoomUpdate: onRoomUpdate, onRoomList: onRoomList);
+    socketService.setupListeners(
+      onRoomCreated: onRoomCreated,
+      onRoomUpdate: onRoomUpdate,
+      onRoomList: onRoomList,
+    );
   }
+
   void onRoomCreated(data) {
     Room currentRoom = Room.fromJson(data);
     print('data: ${currentRoom.status}');
     if (currentRoom.status == true) {
-      print('✅ Phòng ${currentRoom.host.name} đã được tạo (is ${currentRoom.status}) : ${currentRoom.id}');
+      print(
+        '✅ Phòng ${currentRoom.host.name} đã được tạo (is ${currentRoom.status}) : ${currentRoom.id}',
+      );
 
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => RoomScreen(room: currentRoom),
-        ),
+        MaterialPageRoute(builder: (_) => RoomScreen(room: currentRoom)),
       ).then((_) {
         // Reload danh sách phòng khi quay lại từ RoomScreen
         if (mounted) socketService.getRooms(); // Reload khi quay lại
-
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tạo phòng thất bại')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Tạo phòng thất bại')));
     }
   }
-  void onRoomUpdate(data)  {
+
+  void onRoomUpdate(data) {
     print('onRoomUpdate');
     final updatedRoom = data;
 
@@ -69,7 +75,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
     });
   }
 
-  void onRoomList(data)  {
+  void onRoomList(data) {
     print('📤 onRoomList update');
     if (!mounted) return; // Không làm gì nếu widget đã bị dispose
 
@@ -77,6 +83,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
       rooms = List<Room>.from(data.map((r) => Room.fromJson(r)));
     });
   }
+
   void _createRoom() async {
     final currentUser = await AuthService.getUser();
     final user = {
@@ -89,9 +96,8 @@ class _LobbyScreenState extends State<LobbyScreen> {
       "avatarPath": currentUser?['avatarPath'],
       "score": currentUser?['score'],
     };
-    String id = '${currentUser?['id']}.${DateTime
-        .now()
-        .millisecondsSinceEpoch}';
+    String id =
+        '${currentUser?['id']}.${DateTime.now().millisecondsSinceEpoch}';
     final host = Player.fromJson(user);
     socketService.createRoom(id, host);
   }
@@ -184,7 +190,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     IconButton(
                       icon: const Icon(Icons.close, size: 32),
                       tooltip: 'Đóng sảnh chờ',
-                      onPressed: () => _showSubscreen('ranked'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                     ),
                   ],
                 ),
@@ -210,16 +218,19 @@ class _LobbyScreenState extends State<LobbyScreen> {
                           } else {
                             showDialog(
                               context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Phòng đã đầy'),
-                                content: const Text('Phòng này đã có đủ người chơi.'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: const Text('Đóng'),
+                              builder:
+                                  (ctx) => AlertDialog(
+                                    title: const Text('Phòng đã đầy'),
+                                    content: const Text(
+                                      'Phòng này đã có đủ người chơi.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Đóng'),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
                             );
                           }
                         },

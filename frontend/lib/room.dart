@@ -9,7 +9,7 @@ import 'pvp_match.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:frontend/socket_service.dart';
 
-class RoomScreen extends StatefulWidget  {
+class RoomScreen extends StatefulWidget {
   final Room room;
 
   const RoomScreen({super.key, required this.room});
@@ -26,7 +26,8 @@ class _RoomScreenState extends State<RoomScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentUserIdAndSetup();();
+    _loadCurrentUserIdAndSetup();
+    ();
     currentRoom = widget.room;
   }
 
@@ -35,7 +36,8 @@ class _RoomScreenState extends State<RoomScreen> {
     currentRoom = widget.room;
 
     socketService.onRoomUpdateCallback = (room) {
-      if (room.id != currentRoom.id) return; // Không phải phòng mình đang ở → bỏ qua
+      if (room.id != currentRoom.id)
+        return; // Không phải phòng mình đang ở → bỏ qua
 
       final isStillInRoom =
           room.host.id == currentUserId || room.opponent?.id == currentUserId;
@@ -72,9 +74,11 @@ class _RoomScreenState extends State<RoomScreen> {
       canPop: true,
       onPopInvoked: (didPop) async {
         if (!didPop) return;
-        final socketService = Provider.of<SocketRomService>(context, listen: false);
-        socketService.leaveRoom(currentRoom.id, currentUserId??0);
-
+        final socketService = Provider.of<SocketRomService>(
+          context,
+          listen: false,
+        );
+        socketService.leaveRoom(currentRoom.id, currentUserId ?? 0);
       },
       child: Container(
         decoration: const BoxDecoration(
@@ -107,10 +111,16 @@ class _RoomScreenState extends State<RoomScreen> {
                         icon: const Icon(Icons.close, size: 32),
                         onPressed: () async {
                           final currentUserId = await AuthService.getUserId();
-                          final socketService = Provider.of<SocketRomService>(context, listen: false);
+                          final socketService = Provider.of<SocketRomService>(
+                            context,
+                            listen: false,
+                          );
 
                           if (currentUserId != null) {
-                            socketService.leaveRoom(currentRoom.id, currentUserId);
+                            socketService.leaveRoom(
+                              currentRoom.id,
+                              currentUserId,
+                            );
                           }
 
                           Navigator.pop(context);
@@ -147,13 +157,20 @@ class _RoomScreenState extends State<RoomScreen> {
                             child: GestureDetector(
                               onTap: () async {
                                 // Host removes opponent (update room in the list)
-                                final currentUserId = await AuthService.getUserId();
-                                final socketService = Provider.of<SocketRomService>(context, listen: false);
+                                final currentUserId =
+                                    await AuthService.getUserId();
+                                final socketService =
+                                    Provider.of<SocketRomService>(
+                                      context,
+                                      listen: false,
+                                    );
 
                                 if (currentUserId != null) {
-                                  socketService.leaveRoom(currentRoom.id, currentRoom.opponent?.id ?? 0);
+                                  socketService.leaveRoom(
+                                    currentRoom.id,
+                                    currentRoom.opponent?.id ?? 0,
+                                  );
                                 }
-
                               },
                               child: const CircleAvatar(
                                 backgroundColor: Colors.red,
@@ -178,23 +195,27 @@ class _RoomScreenState extends State<RoomScreen> {
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: (hasOpponent && isHost)
-                          ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PvPMatchScreen(
-                              player1: currentRoom.host,
-                              player2: currentRoom.opponent!,
-                            ),
-                          ),
-                        );
-                      }
-                          : null, // ❌ Vô hiệu hóa nếu không phải host hoặc chưa có đối thủ
+                      onPressed:
+                          (hasOpponent && isHost)
+                              ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => PvPMatchScreen(
+                                          player1: currentRoom.host,
+                                          player2: currentRoom.opponent!,
+                                          matchId: currentRoom.id,
+                                        ),
+                                  ),
+                                );
+                              }
+                              : null, // ❌ Vô hiệu hóa nếu không phải host hoặc chưa có đối thủ
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: hasOpponent
-                            ? (isHost ? Colors.black : Colors.blueGrey)
-                            : Colors.blueGrey,
+                        backgroundColor:
+                            hasOpponent
+                                ? (isHost ? Colors.black : Colors.blueGrey)
+                                : Colors.blueGrey,
                       ),
                       child: Text(
                         hasOpponent
@@ -214,7 +235,6 @@ class _RoomScreenState extends State<RoomScreen> {
     );
   }
 }
-
 
 /// Widget dùng chung để render 1 Player card
 class PlayerCard extends StatelessWidget {
@@ -253,7 +273,7 @@ class PlayerCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Level ${player.exp}', // Ở đây có thể là level 
+                    'Level ${player.exp}', // Ở đây có thể là level
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
