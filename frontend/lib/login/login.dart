@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
-    
+
     try {
       final data = await apiService.login(
         email: _emailController.text,
@@ -149,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 32),
               TextField(
                 controller: _emailController,
-                keyboardType: TextInputType.phone,
+                keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   hintText: '@gmail.com',
                   labelText: 'Email',
