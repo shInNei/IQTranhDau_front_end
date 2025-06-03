@@ -9,7 +9,7 @@ import 'lobby.dart';
 import 'models/player.dart';
 import 'home.dart';
 import 'layout.dart';
-import 'services/socketPvP.dart';
+import 'services/SocketPvP.dart';
 
 class PvPMatchScreen extends StatefulWidget {
   final Player player1;
