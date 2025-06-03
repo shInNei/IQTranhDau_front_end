@@ -219,7 +219,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   final response = await GoogleAuthService().signInAndSendToBackend();
                   final token = response?['accessToken'];
                   final user = response?['user'];
-
                   await AuthService.saveLoginData(token, user);
                   if (user != null) {
                     print('✅ Token saved to local storage');
