@@ -245,4 +245,81 @@ class ApiService {
       }
   }
 
+  Future<void> forgotPassword(String email) async {
+    final url = Uri.parse('$baseUrl/auth/forgot-password');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email,
+      }),
+    );
+
+    print('📧 Forgot Password response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode == 201) {
+      // OTP sent successfully
+      return;
+    } else if (response.statusCode == 400) {
+      throw Exception("Người dùng Google không dùng mật khẩu");
+    } else {
+      throw Exception("Yêu cầu đặt lại mật khẩu thất bại: ${response.statusCode} ${response.reasonPhrase}");
+    }
+  }
+
+
+  Future<void> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final url = Uri.parse('$baseUrl/auth/reset-password');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email,
+        'otp': otp,
+        'newPassword': newPassword,
+      }),
+    );
+
+    print('🔁 Reset Password response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode == 201) {
+      // Password changed successfully
+      return;
+    } else if (response.statusCode == 400) {
+      throw Exception("Thiếu thông tin hoặc OTP không hợp lệ");
+    } else {
+      throw Exception("Đặt lại mật khẩu thất bại: ${response.statusCode} ${response.reasonPhrase}");
+    }
+  }
+
+  Future<int> getMyRank() async {
+    final url = Uri.parse('$baseUrl/leaderboard/rank');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('📊 Get My Rank response: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['rank_index'];
+    } else {
+      throw Exception('Không thể lấy hạng của người dùng: ${response.statusCode} ${response.reasonPhrase}');
+    }
+  }
 }

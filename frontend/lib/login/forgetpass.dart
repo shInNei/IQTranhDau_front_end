@@ -3,6 +3,7 @@ import 'package:email_validator/email_validator.dart';
 import '../services/APICall.dart';
 import '../constants.dart';
 import 'login.dart';
+import 'resetpass.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
   const ForgetPasswordScreen({super.key});
@@ -60,52 +61,39 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                     child: ElevatedButton(
                       onPressed: () async {
                         print("Gửi yêu cầu đặt lại mật khẩu");
-                        // if (_formKey.currentState!.validate()) {
-                        //   ApiService apiService = ApiService(baseUrl: SERVER_URL, token: null);
+                        if (_formKey.currentState!.validate()) {
+                          ApiService apiService = ApiService(baseUrl: SERVER_URL, token: null);
 
-                        //   try {
-                        //     await apiService.forgotPassword(
-                        //       email: emailController.text.trim(),
-                        //     );
+                          try {
+                            await apiService.forgotPassword(
+                              emailController.text.trim(),
+                            );
 
-                        //     if (!mounted) return;
-                        //     showDialog(
-                        //       context: context,
-                        //       builder: (context) => AlertDialog(
-                        //         title: const Text("Thành công"),
-                        //         content: const Text("Email đặt lại mật khẩu đã được gửi."),
-                        //         actions: [
-                        //           TextButton(
-                        //             onPressed: () {
-                        //               Navigator.of(context).pop();
-                        //               Navigator.pushReplacement(
-                        //                 context,
-                        //                 MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        //               );
-                        //             },
-                        //             child: const Text("Đăng nhập"),
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     );
-                        //   } catch (e) {
-                        //     if (!mounted) return;
-                        //     showDialog(
-                        //       context: context,
-                        //       builder: (context) => AlertDialog(
-                        //         title: const Text("Lỗi"),
-                        //         content: Text(e.toString().replaceAll("Exception: ", "")),
-                        //         actions: [
-                        //           TextButton(
-                        //             onPressed: () => Navigator.of(context).pop(),
-                        //             child: const Text("Đóng"),
-                        //           ),
-                        //         ],
-                        //       ),
-                        //     );
-                        //   }
-                        // }
-                      },
+                            if (!mounted) return;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ResetPasswordScreen(email: emailController.text.trim()),
+                              ),
+                            );
+                          } catch (e) {
+                              if (!mounted) return;
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text("Lỗi"),
+                                  content: Text(e.toString().replaceAll("Exception: ", "")),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(),
+                                      child: const Text("Đóng"),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          }
+                        },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

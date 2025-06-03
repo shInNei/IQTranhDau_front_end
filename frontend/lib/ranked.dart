@@ -16,6 +16,8 @@ class RankedScreen extends StatefulWidget {
 
 class _RankedScreenState extends State<RankedScreen> {
   List<Player> rankings = [];
+  int myRankIndex = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -38,7 +40,9 @@ class _RankedScreenState extends State<RankedScreen> {
   void fetchRankingData() async {
     // Simulated API response
     // TODO: Replace with actual API call
-
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final api = ApiService(
@@ -47,8 +51,12 @@ class _RankedScreenState extends State<RankedScreen> {
       );
       final leaderboard = await api.fetchLeaderboard(); // Replace with your actual API method
 
+      final rankIndex = await api.getMyRank();
+
       setState(() {
         rankings = leaderboard;
+        myRankIndex = rankIndex;
+        _isLoading = false;
       });
 
     } catch(e) {
@@ -56,6 +64,7 @@ class _RankedScreenState extends State<RankedScreen> {
       // Handle error appropriately, e.g., show a snackbar or dialog
       setState(() {
         rankings = []; // Clear rankings on error
+        _isLoading = false;
       });
     }
     await Future.delayed(const Duration(milliseconds: 500));
@@ -170,7 +179,7 @@ Widget build(BuildContext context) {
         ),
       ),
       child: SafeArea( // Automatically handles status bar spacing
-        child: Column(
+        child: _isLoading ? const Center(child: CircularProgressIndicator()) : Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
@@ -179,7 +188,7 @@ Widget build(BuildContext context) {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 16),
                   child: Text(
-                    '12356/200222', // <-- Replace with actual data later
+                    'Thứ hạng bản thân: $myRankIndex', // <-- Replace with actual data later
                     style: TextStyle(
                       color: Colors.teal.shade600,
                       fontWeight: FontWeight.bold,
