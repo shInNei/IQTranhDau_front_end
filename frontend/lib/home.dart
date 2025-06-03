@@ -91,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.white,
                 ),
               ),
-              onPressed: () => _showSubscreen('rank'),
+              // onPressed: () => _showSubscreen('rank'),
+              onPressed: () {},
               child: const Text(
                 'Đấu hạng',
                 style: TextStyle(color: Colors.white),
