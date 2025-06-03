@@ -78,6 +78,7 @@ class MyApp extends StatelessWidget {
         '/onboarding': (context) => const OnboardingScreen(),
         '/home': (context) => MainPageLayout(),
         '/test': (context) => const MyHomePage(title: 'Flutter Demo Home Page'),
+        '/offline': (context) => OfflineScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

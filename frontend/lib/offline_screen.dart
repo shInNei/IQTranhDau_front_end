@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'services/auth_service.dart';
 
 class OfflineScreen extends StatelessWidget {
   const OfflineScreen({super.key});
@@ -32,8 +34,19 @@ class OfflineScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async{
                   // TODO: Retry network logic here
+                  final result = await Connectivity().checkConnectivity();
+                  final connected = result != ConnectivityResult.none;
+
+                  if (connected) {
+                    await AuthService.logout();
+                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Vẫn chưa có kết nối mạng')),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.refresh),
                 label: const Text('Thử lại'),
